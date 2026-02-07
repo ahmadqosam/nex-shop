@@ -1,0 +1,39 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+.next
+out
+build
+
+# Turbo
+.turbo
+
+# Environment variables
+*.env
+*.env.local
+*.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Keys and secrets
+*.pem
+keys/
+
+# Test outputs
+coverage
+playwright-report
+test-results
+
+# Debug logs
+npm-debug.log*
+pnpm-debug.log*
