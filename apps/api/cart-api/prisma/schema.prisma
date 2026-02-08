@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/cart-api-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Cart {
+  id           String     @id @default(uuid())
+  
+  // User association (null = guest cart, uses sessionId)
+  userId       String?    @map("user_id")
+  sessionId    String?    @map("session_id")
+  
+  // Cart status
+  status       CartStatus @default(ACTIVE)
+  
+  // Cart items
+  items        CartItem[]
+  
+  // Timestamps
+  expiresAt    DateTime?  @map("expires_at")  // For guest cart cleanup
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@unique([userId])
+  @@index([sessionId])
+  @@index([status])
+  @@map("carts")
+}
+
+model CartItem {
+  id           String   @id @default(uuid())
+  
+  // Cart relation
+  cartId       String   @map("cart_id")
+  cart         Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  
+  // Product reference (from product-api)
+  productId    String   @map("product_id")
+  variantId    String   @map("variant_id")
+  sku          String
+  
+  // Quantity
+  quantity     Int      @default(1)
+  
+  // Price snapshot at time of adding (in cents)
+  priceInCents Int      @map("price_in_cents")
+  currency     String   @default("USD")
+  
+  // Product data snapshot for display
+  productName  String   @map("product_name")
+  variantName  String   @map("variant_name")
+  imageUrl     String?  @map("image_url")
+  
+  // Timestamps
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([cartId, variantId])
+  @@map("cart_items")
+}
+
+enum CartStatus {
+  ACTIVE
+  MERGED       // Guest cart merged to user cart
+  CONVERTED    // Converted to order
+  ABANDONED    // Abandoned cart
+  EXPIRED      // Guest cart expired
+}

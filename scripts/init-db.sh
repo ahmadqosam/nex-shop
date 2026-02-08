@@ -19,4 +19,14 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
     CREATE USER inventory_api_user WITH PASSWORD 'inventory_api_password';
     CREATE DATABASE inventory_api_db OWNER inventory_api_user;
     GRANT ALL PRIVILEGES ON DATABASE inventory_api_db TO inventory_api_user;
+
+    -- cart-api
+    CREATE USER cart_api_user WITH PASSWORD 'cart_api_password';
+    CREATE DATABASE cart_api_db OWNER cart_api_user;
+    GRANT ALL PRIVILEGES ON DATABASE cart_api_db TO cart_api_user;
+
+    -- order-api
+    CREATE USER order_api_user WITH PASSWORD 'order_api_password';
+    CREATE DATABASE order_api_db OWNER order_api_user;
+    GRANT ALL PRIVILEGES ON DATABASE order_api_db TO order_api_user;
 EOSQL

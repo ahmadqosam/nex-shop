@@ -1,0 +1,50 @@
+service: cart-api
+
+frameworkVersion: '3'
+
+plugins:
+  - serverless-localstack
+
+custom:
+  localstack:
+    stages:
+      - local
+    host: http://localhost:4569
+    edgePort: 4569
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  stage: ${opt:stage, 'local'}
+  memorySize: 512
+  timeout: 30
+  environment:
+    NODE_ENV: production
+    DATABASE_URL: ${env:DATABASE_URL, 'postgresql://cart_api_user:cart_api_password@host.docker.internal:5435/cart_api_db'}
+    REDIS_HOST: ${env:REDIS_HOST, 'host.docker.internal'}
+    REDIS_PORT: ${env:REDIS_PORT, '6382'}
+    REDIS_PASSWORD: ${env:REDIS_PASSWORD, ''}
+    CACHE_TTL: ${env:CACHE_TTL, '300'}
+
+functions:
+  api:
+    handler: dist/lambda.handler
+    events:
+      - http:
+          method: ANY
+          path: /
+      - http:
+          method: ANY
+          path: '{proxy+}'
+
+package:
+  individually: true
+  patterns:
+    - '!src/**'
+    - '!test/**'
+    - '!prisma/**'
+    - '!.env*'
+    - 'dist/**'
+    - 'node_modules/**'
+    - 'node_modules/.prisma/**'
