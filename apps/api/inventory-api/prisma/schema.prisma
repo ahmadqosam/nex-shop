@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/inventory-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Inventory {
+  id           String   @id @default(uuid())
+  sku          String   @unique  // References Variant.sku from product-api
+  
+  // Stock levels
+  quantity     Int      @default(0)
+  reserved     Int      @default(0)  // Held for pending orders
+  
+  // Thresholds
+  lowStockThreshold   Int  @default(10)
+  
+  // Metadata
+  warehouseCode       String?  @map("warehouse_code")
+  
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  adjustments  InventoryAdjustment[]
+  
+  @@map("inventories")
+}
+
+model InventoryAdjustment {
+  id           String   @id @default(uuid())
+  
+  inventoryId  String   @map("inventory_id")
+  inventory    Inventory @relation(fields: [inventoryId], references: [id])
+  
+  // Adjustment details
+  adjustmentType String  @map("adjustment_type")  // 'restock', 'sale', 'return', 'correction'
+  quantity       Int     // Positive = add, Negative = subtract
+  reason         String?
+  
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("inventory_adjustments")
+}
+
+// Add your models here

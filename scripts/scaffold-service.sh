@@ -73,7 +73,7 @@ echo ""
 echo -e "  ${BOLD}Configuration${NC}"
 echo "  ─────────────────────────────"
 echo "  Name:        $SERVICE_NAME"
-echo "  Package:     @apps/$SERVICE_NAME"
+echo "  Package:     $SERVICE_NAME"
 echo "  Port:        $PORT"
 echo "  Prisma:      $([ "$INCLUDE_PRISMA" = "y" ] && echo "Yes" || echo "No")"
 echo "  Redis:       $([ "$INCLUDE_REDIS" = "y" ] && echo "Yes" || echo "No")"
@@ -274,7 +274,7 @@ fi
 
 cat > "$D/package.json" << PKGEOF
 {
-  "name": "@apps/${SERVICE_NAME}",
+  "name": "${SERVICE_NAME}",
   "version": "0.0.1",
   "description": "${SERVICE_DESC}",
   "author": "",
@@ -809,9 +809,10 @@ EOF
 if [ "$INCLUDE_PRISMA" = "y" ]; then
 
 # ─── prisma/schema.prisma ────────────────────────────────────────────────────
-cat > "$D/prisma/schema.prisma" << 'EOF'
+cat > "$D/prisma/schema.prisma" << SCHEMAEOF
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/${SERVICE_NAME}-client"
 }
 
 datasource db {
@@ -820,7 +821,7 @@ datasource db {
 }
 
 // Add your models here
-EOF
+SCHEMAEOF
 
 # ─── src/prisma/prisma.module.ts ─────────────────────────────────────────────
 cat > "$D/src/prisma/prisma.module.ts" << 'EOF'
@@ -836,14 +837,14 @@ export class PrismaModule {}
 EOF
 
 # ─── src/prisma/prisma.service.ts ────────────────────────────────────────────
-cat > "$D/src/prisma/prisma.service.ts" << 'EOF'
+cat > "$D/src/prisma/prisma.service.ts" << SVCEOF
 import {
   Injectable,
   OnModuleInit,
   OnModuleDestroy,
   Logger,
 } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/${SERVICE_NAME}-client';
 
 @Injectable()
 export class PrismaService
@@ -854,16 +855,16 @@ export class PrismaService
 
   async onModuleInit(): Promise<void> {
     this.logger.log('Connecting to database...');
-    await this.$connect();
+    await this.\$connect();
     this.logger.log('Database connection established');
   }
 
   async onModuleDestroy(): Promise<void> {
     this.logger.log('Disconnecting from database...');
-    await this.$disconnect();
+    await this.\$disconnect();
   }
 }
-EOF
+SVCEOF
 
 # ─── src/prisma/prisma.service.spec.ts ───────────────────────────────────────
 cat > "$D/src/prisma/prisma.service.spec.ts" << 'EOF'

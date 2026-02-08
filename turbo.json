@@ -9,12 +9,25 @@
       "cache": false
     },
     "lint": {},
+    "prisma:generate": {
+      "cache": false
+    },
     "dev": {
       "cache": false,
       "persistent": true
     },
-    "web#dev": {
-      "dependsOn": ["api#dev"],
+    "product-api#dev": {
+      "dependsOn": ["product-api#prisma:generate"],
+      "cache": false,
+      "persistent": true
+    },
+    "inventory-api#dev": {
+      "dependsOn": ["inventory-api#prisma:generate"],
+      "cache": false,
+      "persistent": true
+    },
+    "ecomm-web#dev": {
+      "dependsOn": ["product-api#prisma:generate", "inventory-api#prisma:generate"],
       "cache": false,
       "persistent": true
     }

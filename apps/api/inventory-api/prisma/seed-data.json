@@ -1,0 +1,72 @@
+[
+  {
+    "sku": "NEX-ACE-BLK",
+    "name": "Nex Ace (Black)",
+    "quantity": 50,
+    "reserved": 0,
+    "lowStockThreshold": 10
+  },
+  {
+    "sku": "NEX-ACE-WHT",
+    "name": "Nex Ace (White)",
+    "quantity": 45,
+    "reserved": 0,
+    "lowStockThreshold": 10
+  },
+  {
+    "sku": "NEX-ACE-NVY",
+    "name": "Nex Ace (Navy Blue)",
+    "quantity": 30,
+    "reserved": 0,
+    "lowStockThreshold": 10
+  },
+  {
+    "sku": "BEAM-GEN2-BLK",
+    "name": "Beam Gen 2 (Black)",
+    "quantity": 25,
+    "reserved": 0,
+    "lowStockThreshold": 5
+  },
+  {
+    "sku": "BEAM-GEN2-WHT",
+    "name": "Beam Gen 2 (White)",
+    "quantity": 20,
+    "reserved": 0,
+    "lowStockThreshold": 5
+  },
+  {
+    "sku": "ROAM2-SET-BLK",
+    "name": "Roam 2 Set (Black)",
+    "quantity": 60,
+    "reserved": 0,
+    "lowStockThreshold": 15
+  },
+  {
+    "sku": "ROAM2-SET-WHT",
+    "name": "Roam 2 Set (White)",
+    "quantity": 55,
+    "reserved": 0,
+    "lowStockThreshold": 15
+  },
+  {
+    "sku": "ROAM2-SET-ORG",
+    "name": "Roam 2 Set (Orange)",
+    "quantity": 40,
+    "reserved": 0,
+    "lowStockThreshold": 10
+  },
+  {
+    "sku": "MOVE2-BLK",
+    "name": "Move 2 (Black)",
+    "quantity": 35,
+    "reserved": 0,
+    "lowStockThreshold": 8
+  },
+  {
+    "sku": "MOVE2-WHT",
+    "name": "Move 2 (White)",
+    "quantity": 30,
+    "reserved": 0,
+    "lowStockThreshold": 8
+  }
+]
