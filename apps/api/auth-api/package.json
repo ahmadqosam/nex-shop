@@ -23,6 +23,7 @@
     "migration:generate": "pnpm typeorm migration:generate -d src/database/data-source.ts",
     "migration:run": "pnpm typeorm migration:run -d src/database/data-source.ts",
     "migration:revert": "pnpm typeorm migration:revert -d src/database/data-source.ts",
+    "seed": "ts-node --project tsconfig.typeorm.json -r tsconfig-paths/register src/database/seed.ts",
     "build:lambda": "nest build",
     "deploy:local": "pnpm build:lambda && serverless deploy --stage local"
   },
