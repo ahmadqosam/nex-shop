@@ -16,6 +16,8 @@ Shopping cart management microservice for nex-shop e-commerce platform.
 - Guest-to-user cart merge on login
 - Redis caching with cache-aside pattern
 - Price snapshots at time of adding
+- Inventory checks against `inventory-api`
+- Cart conversion to order (status update)
 
 ## API Endpoints
 
@@ -29,6 +31,7 @@ Shopping cart management microservice for nex-shop e-commerce platform.
 | DELETE | `/cart/:cartId/items/:itemId` | Remove item                                                     |
 | DELETE | `/cart/:cartId`               | Clear all items                                                 |
 | POST   | `/cart/merge`                 | Merge guest cart into user cart                                 |
+| POST   | `/cart/:cartId/convert`       | Convert cart to order (status: CONVERTED)                       |
 
 ## Data Models
 
@@ -116,7 +119,10 @@ REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=
 CACHE_TTL=300
+CACHE_TTL=300
 CORS_ORIGIN=http://localhost:3000
+INVENTORY_API_URL=http://localhost:4002
+
 ```
 
 ## Swagger Documentation

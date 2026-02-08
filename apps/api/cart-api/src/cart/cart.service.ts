@@ -9,6 +9,10 @@ import { PrismaService } from '../prisma';
 import { CacheService } from '../cache';
 import { CartStatus, Cart, CartItem } from '@prisma/cart-api-client';
 import { AddItemDto, UpdateQuantityDto } from './dto';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+import { AxiosError } from 'axios';
+
 
 type CartWithItems = Cart & { items: CartItem[] };
 
@@ -26,8 +30,38 @@ export class CartService {
     private readonly prisma: PrismaService,
     private readonly cache: CacheService,
     private readonly config: ConfigService,
+    private readonly httpService: HttpService,
   ) {
     this.cacheTtl = this.config.get<number>('CACHE_TTL', 300); // 5 min default
+  }
+
+  /**
+   * Check inventory availability
+   */
+  private async checkInventory(
+    sku: string,
+    quantity: number,
+  ): Promise<void> {
+    try {
+      const { data } = await firstValueFrom(
+        this.httpService.get<{ quantity: number }>(`/inventory/${sku}`),
+      );
+
+      if (data.quantity < quantity) {
+        throw new BadRequestException(
+          `Insufficient stock for item ${sku}. Available: ${data.quantity}, Required: ${quantity}`,
+        );
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      if (error instanceof AxiosError && error.response?.status === 404) {
+        throw new BadRequestException(`Item with SKU ${sku} not found`);
+      }
+      this.logger.error(`Inventory check failed for ${sku}: ${error.message}`);
+      throw error;
+    }
   }
 
   /**
@@ -210,7 +244,16 @@ export class CartService {
       },
     });
 
+    let newQuantity = dto.quantity;
     if (existingItem) {
+      newQuantity += existingItem.quantity;
+    }
+
+    // Verify inventory
+    await this.checkInventory(dto.sku, newQuantity);
+
+    if (existingItem) {
+
       // Update quantity
       await this.prisma.cartItem.update({
         where: { id: existingItem.id },
@@ -281,6 +324,9 @@ export class CartService {
       await this.prisma.cartItem.delete({ where: { id: itemId } });
       this.logger.log(`Removed item ${itemId} from cart ${cartId}`);
     } else {
+      // Verify inventory
+      await this.checkInventory(item.sku, dto.quantity);
+
       // Update quantity
       await this.prisma.cartItem.update({
         where: { id: itemId },

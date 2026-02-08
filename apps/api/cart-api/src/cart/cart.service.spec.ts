@@ -5,11 +5,18 @@ import { CartService } from './cart.service';
 import { PrismaService } from '../prisma';
 import { CacheService } from '../cache';
 import { CartStatus } from '@prisma/cart-api-client';
+import { HttpService } from '@nestjs/axios';
+import { of, throwError } from 'rxjs';
+import { AxiosError } from 'axios';
+
 
 describe('CartService', () => {
   let service: CartService;
-  let prisma: jest.Mocked<PrismaService>;
-  let cache: jest.Mocked<CacheService>;
+  let prisma: any;
+  let cache: any;
+  let httpService: any;
+
+
 
   const mockCart = {
     id: 'cart-123',
@@ -68,19 +75,28 @@ describe('CartService', () => {
       get: jest.fn().mockReturnValue(300),
     };
 
+    const mockHttpService = {
+      get: jest.fn(),
+    };
+
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CartService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: CacheService, useValue: mockCache },
         { provide: ConfigService, useValue: mockConfig },
+        { provide: HttpService, useValue: mockHttpService },
       ],
+
     }).compile();
 
     service = module.get<CartService>(CartService);
     prisma = module.get(PrismaService);
     cache = module.get(CacheService);
+    httpService = module.get(HttpService);
   });
+
 
   describe('getOrCreateCart', () => {
     it('should throw BadRequestException if no userId or sessionId provided', async () => {
@@ -211,6 +227,8 @@ describe('CartService', () => {
         .mockResolvedValue(mockCartWithItems); // Second call for return
       prisma.cartItem.findUnique.mockResolvedValue(null);
       prisma.cartItem.create.mockResolvedValue(mockCartItem);
+      httpService.get.mockReturnValue(of({ data: { quantity: 10 } }));
+
 
       await service.addItem('cart-123', addItemDto);
 
@@ -227,6 +245,7 @@ describe('CartService', () => {
         ...mockCartItem,
         quantity: 3,
       });
+      httpService.get.mockReturnValue(of({ data: { quantity: 10 } }));
 
       await service.addItem('cart-123', addItemDto);
 
@@ -260,7 +279,11 @@ describe('CartService', () => {
       });
       prisma.cart.findUnique.mockResolvedValue(mockCartWithItems);
 
+      prisma.cart.findUnique.mockResolvedValue(mockCartWithItems);
+      httpService.get.mockReturnValue(of({ data: { quantity: 10 } }));
+
       await service.updateItemQuantity('cart-123', 'item-123', { quantity: 5 });
+
 
       expect(prisma.cartItem.update).toHaveBeenCalledWith({
         where: { id: 'item-123' },

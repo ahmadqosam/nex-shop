@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
+import { HttpService } from '@nestjs/axios';
+import { of } from 'rxjs';
+
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
 import { execSync } from 'child_process';
@@ -37,9 +40,23 @@ describe('Cart API (e2e)', () => {
       cwd: process.cwd(),
     });
 
+    const mockHttpService = {
+      get: () => of({
+        data: { quantity: 100 },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {},
+      }),
+    };
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(HttpService)
+      .useValue(mockHttpService)
+      .compile();
+
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
