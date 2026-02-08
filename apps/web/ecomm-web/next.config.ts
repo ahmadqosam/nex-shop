@@ -50,6 +50,10 @@ const nextConfig: NextConfig = {
         source: '/images/:path*',
         destination: `http://localhost:4002/images/:path*`,
       },
+      {
+        source: '/api/cart/:path*',
+        destination: 'http://localhost:4004/cart/:path*',
+      },
     ];
   },
 };

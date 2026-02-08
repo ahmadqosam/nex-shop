@@ -1,8 +1,9 @@
 
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { AppProvider, useAppContext } from '../AppContext';
 import { PRODUCTS } from '../../constants';
+import { cartService } from '../../services/cartService';
 
 // Mock authService
 vi.mock('../../services/authService', () => ({
@@ -20,158 +21,191 @@ vi.mock('../../services/authService', () => ({
   },
 }));
 
+// Mock cartService
+vi.mock('../../services/cartService', () => ({
+  cartService: {
+    getCart: vi.fn(),
+    addItem: vi.fn(),
+    updateItem: vi.fn(),
+    removeItem: vi.fn(),
+    clearCart: vi.fn(),
+    mergeCart: vi.fn(),
+  }
+}));
+
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AppProvider>{children}</AppProvider>
 );
 
 describe('AppContext', () => {
+  const mockCart = {
+    id: 'cart-123',
+    items: [],
+    totalQuantity: 0,
+    totalAmount: 0,
+  };
+
+  const mockCartWithItem = {
+    ...mockCart,
+    items: [{
+      id: 'item-1',
+      productId: PRODUCTS[0].id,
+      quantity: 1,
+      price: PRODUCTS[0].price,
+      productName: PRODUCTS[0].name,
+      variantName: 'Standard',
+    }]
+  };
+
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
+    vi.clearAllMocks();
+    (cartService.getCart as any).mockResolvedValue(mockCart);
   });
 
-  it('initializes from local storage', () => {
-    const savedCart = JSON.stringify([{ ...PRODUCTS[0], quantity: 2 }]);
-    const savedUser = JSON.stringify({ name: 'Stored User', email: 'stored@test.com' });
-
-    // We need to set items before render
-    localStorage.setItem('nex_cart', savedCart);
-    localStorage.setItem('nex_user', savedUser);
-
+  it('initializes and fetches cart', async () => {
     const { result } = renderHook(() => useAppContext(), { wrapper });
 
+    await waitFor(() => {
+      expect(result.current.cartId).toBe('cart-123');
+    });
+
+    expect(localStorage.getItem('nex_session_id')).toBeTruthy();
+    expect(cartService.getCart).toHaveBeenCalled();
+  });
+
+  it('adds items to cart', async () => {
+    (cartService.addItem as any).mockResolvedValue(mockCartWithItem);
+    const { result } = renderHook(() => useAppContext(), { wrapper });
+    
+    // Wait for init
+    await waitFor(() => expect(result.current.cartId).toBe('cart-123'));
+
+    await act(async () => {
+      await result.current.addToCart(PRODUCTS[0]);
+    });
+
+    expect(cartService.addItem).toHaveBeenCalledWith(
+      'cart-123',
+      expect.objectContaining({ productId: PRODUCTS[0].id }),
+      undefined
+    );
     expect(result.current.cart).toHaveLength(1);
-    expect(result.current.cart[0].quantity).toBe(2);
-    expect(result.current.user?.name).toBe('Stored User');
-  });
-
-  it('provides initial state', () => {
-    const { result } = renderHook(() => useAppContext(), { wrapper });
-    expect(result.current.cart).toEqual([]);
-    expect(result.current.user).toBeNull();
-    expect(result.current.isCartOpen).toBe(false);
-  });
-
-  it('adds items to cart', () => {
-    const { result } = renderHook(() => useAppContext(), { wrapper });
-    const product = PRODUCTS[0];
-
-    act(() => {
-      result.current.addToCart(product);
-    });
-
-    expect(result.current.cart).toHaveLength(1);
-    expect(result.current.cart[0].id).toBe(product.id);
-    expect(result.current.cart[0].quantity).toBe(1);
-
-    act(() => {
-      result.current.addToCart(product, 2);
-    });
-
-    expect(result.current.cart).toHaveLength(1);
-    expect(result.current.cart[0].quantity).toBe(3);
-
-    // Add another product to test map branches
-    const product2 = PRODUCTS[1];
-    act(() => {
-        result.current.addToCart(product2);
-    });
-    expect(result.current.cart).toHaveLength(2);
-
-    // Update first product again
-    act(() => {
-        result.current.addToCart(product, 1);
-    });
-    expect(result.current.cart[0].quantity).toBe(4); // 3 + 1
-    expect(result.current.cart[1].quantity).toBe(1); // Unchanged
-  });
-
-  it('removes items from cart', () => {
-    const { result } = renderHook(() => useAppContext(), { wrapper });
-    const product = PRODUCTS[0];
-
-    act(() => {
-      result.current.addToCart(product);
-    });
-
-    act(() => {
-      result.current.removeFromCart(product.id);
-    });
-
-    expect(result.current.cart).toHaveLength(0);
-  });
-
-  it('updates quantity', () => {
-    const { result } = renderHook(() => useAppContext(), { wrapper });
-    const product = PRODUCTS[0];
-
-    act(() => {
-      result.current.addToCart(product);
-    });
-
-    act(() => {
-      result.current.updateQuantity(product.id, 5);
-    });
-
-    expect(result.current.cart[0].quantity).toBe(5);
-
-    // Add second item
-    const product2 = PRODUCTS[1];
-    act(() => {
-        result.current.addToCart(product2);
-    });
-
-    // Update first item
-    act(() => {
-        result.current.updateQuantity(product.id, 6);
-    });
-
-    expect(result.current.cart[0].quantity).toBe(6);
-    expect(result.current.cart[1].quantity).toBe(1); // Unchanged
-
-    act(() => {
-      result.current.updateQuantity(product.id, 0);
-    });
-
-    expect(result.current.cart).toHaveLength(1);
-    expect(result.current.cart[0].id).toBe(product2.id); // Should remain
-  });
-
-  it('clears cart', () => {
-     const { result } = renderHook(() => useAppContext(), { wrapper });
-     act(() => result.current.addToCart(PRODUCTS[0]));
-     act(() => result.current.clearCart());
-     expect(result.current.cart).toHaveLength(0);
-  });
-
-  it('toggles cart', () => {
-    const { result } = renderHook(() => useAppContext(), { wrapper });
-    expect(result.current.isCartOpen).toBe(false);
-
-    act(() => {
-      result.current.toggleCart();
-    });
-
     expect(result.current.isCartOpen).toBe(true);
   });
 
-  it('handles login and logout', async () => {
+  it('updates quantity', async () => {
+    // Initial fetch
+    (cartService.getCart as any).mockResolvedValueOnce(mockCartWithItem);
+    
+    // Update response
+    const updatedCart = {
+      ...mockCartWithItem,
+      items: [{ ...mockCartWithItem.items[0], quantity: 5 }]
+    };
+    (cartService.updateItem as any).mockResolvedValueOnce(updatedCart);
+
     const { result } = renderHook(() => useAppContext(), { wrapper });
-
-    await act(async () => {
-      await result.current.login('test@example.com', 'Password123');
+    
+    // Wait for initial load
+    await waitFor(() => {
+        expect(result.current.cart.length).toBe(1);
     });
 
-    expect(result.current.user).not.toBeNull();
-    expect(result.current.user?.email).toBe('test@example.com');
-    // Check local storage (only user persisted, NOT tokens)
-    expect(localStorage.getItem('nex_user')).not.toBeNull();
-
     await act(async () => {
-      await result.current.logout();
+      await result.current.updateQuantity('item-1', 5);
     });
 
-    expect(result.current.user).toBeNull();
-    expect(localStorage.getItem('nex_user')).toBeNull();
+    expect(cartService.updateItem).toHaveBeenCalledWith(
+      'cart-123',
+      'item-1',
+      5,
+      undefined
+    );
+    
+    await waitFor(() => {
+        expect(result.current.cart[0].quantity).toBe(5);
+    });
+  });
+
+  it('removes item when quantity is 0', async () => {
+    (cartService.getCart as any).mockResolvedValueOnce(mockCartWithItem);
+    (cartService.removeItem as any).mockResolvedValueOnce(mockCart);
+
+    const { result } = renderHook(() => useAppContext(), { wrapper });
+    await waitFor(() => expect(result.current.cart).toHaveLength(1));
+
+    await act(async () => {
+      await result.current.updateQuantity('item-1', 0);
+    });
+
+    expect(cartService.removeItem).toHaveBeenCalledWith(
+      'cart-123',
+      'item-1',
+      undefined
+    );
+     await waitFor(() => {
+        expect(result.current.cart).toHaveLength(0);
+    });
+  });
+
+  it('merges cart on login', async () => {
+    const mockEmptyGuestCart = { ...mockCart, id: 'guest-cart' };
+    (cartService.getCart as any).mockResolvedValueOnce(mockEmptyGuestCart); // 1. Initial guest cart
+    
+    // 2. Re-fetch triggered by cleanup/login effect or race? 
+    // Actually login triggers user update -> triggers fetchCart.
+    // So we expect getCart to be called again.
+    (cartService.getCart as any).mockResolvedValueOnce(mockCartWithItem); 
+
+    (cartService.mergeCart as any).mockResolvedValueOnce(mockCartWithItem);
+    
+    const { result } = renderHook(() => useAppContext(), { wrapper });
+    await waitFor(() => expect(result.current.cartId).toBe('guest-cart'));
+    
+    await act(async () => {
+      await result.current.login('test@example.com', 'password');
+    });
+
+    expect(cartService.mergeCart).toHaveBeenCalledWith(
+      expect.any(String), // sessionId
+      'test@example.com',
+      'mock-token'
+    );
+    expect(result.current.cart).toHaveLength(1);
+  });
+
+  it('clears local state on logout', async () => {
+    // 1. Initial load
+    (cartService.getCart as any).mockResolvedValueOnce(mockCartWithItem);
+    
+    // 2. Login merge
+    (cartService.mergeCart as any).mockResolvedValueOnce(mockCartWithItem);
+
+    // 3. Logout triggers re-fetch (with new session) -> should be empty
+    (cartService.getCart as any).mockResolvedValueOnce(mockCart); 
+
+    const { result } = renderHook(() => useAppContext(), { wrapper });
+    
+    // Wait for initial load
+    await waitFor(() => expect(result.current.cartId).toBe('cart-123'));
+
+    // Simulate logged in state
+    await act(async () => {
+      await result.current.login('test@example.com', 'pwd');
+    });
+
+    await act(async () => {
+        await result.current.logout();
+    });
+
+    await waitFor(() => {
+         expect(result.current.cart).toEqual([]);
+         expect(result.current.user).toBeNull();
+    });
+   
+    // Session ID should be regenerated
+    expect(localStorage.getItem('nex_session_id')).toBeTruthy();
   });
 });

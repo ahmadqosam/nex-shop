@@ -1,20 +1,22 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { Product, CartItem, User } from '../types';
+import { Product, CartItem, User, AddItemDto } from '../types';
 import { AuthState } from '../types/auth';
 import * as authService from '../services/authService';
+import { cartService } from '../services/cartService';
 
 interface AppContextType {
   cart: CartItem[];
+  cartId: string | null;
   user: User | null;
   isCartOpen: boolean;
   isAuthLoading: boolean;
   authError: string | null;
-  addToCart: (product: Product, quantity?: number) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  clearCart: () => void;
+  addToCart: (product: Product, quantity?: number, selectedVariant?: { id: string; name: string; sku: string; price: number }) => Promise<void>;
+  removeFromCart: (itemId: string) => Promise<void>;
+  updateQuantity: (itemId: string, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
   toggleCart: () => void;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name?: string) => Promise<void>;
@@ -25,11 +27,14 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const USER_STORAGE_KEY = 'nex_user';
-const CART_STORAGE_KEY = 'nex_cart';
+const SESSION_STORAGE_KEY = 'nex_session_id';
 const REFRESH_BUFFER_MS = 60000; // Refresh 1 minute before expiry
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartId, setCartId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  
   const [user, setUser] = useState<User | null>(null);
   const [authState, setAuthState] = useState<AuthState>({
     accessToken: null,
@@ -40,31 +45,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [authError, setAuthError] = useState<string | null>(null);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load persisted state on mount (only cart and user - tokens are NOT persisted)
+  // Initialize session and load user/cart
   useEffect(() => {
-    /* v8 ignore start */
     if (typeof window !== 'undefined') {
-      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
-      if (savedCart) setCart(JSON.parse(savedCart));
-
+      // Load user
       const savedUser = localStorage.getItem(USER_STORAGE_KEY);
       if (savedUser) setUser(JSON.parse(savedUser));
+
+      // Load or create session ID
+      let currentSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
+      if (!currentSessionId) {
+        currentSessionId = crypto.randomUUID();
+        localStorage.setItem(SESSION_STORAGE_KEY, currentSessionId);
+      }
+      setSessionId(currentSessionId);
     }
-    /* v8 ignore stop */
   }, []);
 
-  // Persist cart
+  // Fetch cart when session or user is ready
   useEffect(() => {
-    /* v8 ignore start */
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-    }
-    /* v8 ignore stop */
-  }, [cart]);
+    const fetchCart = async () => {
+      if (!sessionId) return;
+      
+      try {
+        const cart = await cartService.getCart(
+          user?.id, 
+          sessionId, 
+          authState.accessToken || undefined
+        );
+        setCartId(cart.id);
+        setCartItems(cart.items);
+      } catch (error) {
+        console.error('Failed to fetch cart:', error);
+      }
+    };
+
+    fetchCart();
+  }, [sessionId, user?.id, authState.accessToken]);
 
   // Persist user
   useEffect(() => {
-    /* v8 ignore start */
     if (typeof window !== 'undefined') {
       if (user) {
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
@@ -72,7 +92,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         localStorage.removeItem(USER_STORAGE_KEY);
       }
     }
-    /* v8 ignore stop */
   }, [user]);
 
   // Setup token refresh (refresh token is in httpOnly cookie, managed by browser)
@@ -110,32 +129,88 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [scheduleRefresh]);
 
-  const addToCart = (product: Product, quantity: number = 1) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item);
-      }
-      return [...prev, { ...product, quantity }];
-    });
-  };
+  const addToCart = async (
+    product: Product, 
+    quantity: number = 1,
+    selectedVariant?: { id: string; name: string; sku: string; price: number }
+  ) => {
+    if (!cartId) return;
 
-  const removeFromCart = (productId: string) => {
-    setCart(prev => prev.filter(item => item.id !== productId));
-  };
+    try {
+      const priceToUse = selectedVariant ? selectedVariant.price : product.price;
+      // Convert to cents for API if price is in dollars/float, assumes input is dollars
+      const priceInCents = Math.round(priceToUse * 100);
 
-  const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity < 1) {
-      removeFromCart(productId);
-      return;
+      const dto: AddItemDto = {
+        productId: product.id,
+        variantId: selectedVariant?.id || 'default', // cart-api requires these
+        sku: selectedVariant?.sku || 'default-sku',
+        quantity,
+        priceInCents,
+        productName: product.name,
+        variantName: selectedVariant?.name || 'Standard',
+        imageUrl: selectedVariant && 'image' in selectedVariant && typeof selectedVariant.image === 'string' 
+          ? selectedVariant.image 
+          : product.image,
+      };
+
+      const updatedCart = await cartService.addItem(
+        cartId, 
+        dto, 
+        authState.accessToken || undefined
+      );
+      setCartItems(updatedCart.items);
+      setIsCartOpen(true);
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      // Could set an error state here to show to user
     }
-    setCart(prev => prev.map(item => item.id === productId ? { ...item, quantity } : item));
   };
 
-  const clearCart = () => setCart([]);
+  const removeFromCart = async (itemId: string) => { // items in cart use item ID not product ID
+    if (!cartId) return;
+    try {
+      const updatedCart = await cartService.removeItem(
+        cartId, 
+        itemId, 
+        authState.accessToken || undefined
+      );
+      setCartItems(updatedCart.items);
+    } catch (error) {
+      console.error('Failed to remove item:', error);
+    }
+  };
+
+  const updateQuantity = async (itemId: string, quantity: number) => {
+    if (!cartId) return;
+    if (quantity < 1) {
+      return removeFromCart(itemId);
+    }
+
+    try {
+      const updatedCart = await cartService.updateItem(
+        cartId, 
+        itemId, 
+        quantity, 
+        authState.accessToken || undefined
+      );
+      setCartItems(updatedCart.items);
+    } catch (error) {
+      console.error('Failed to update quantity:', error);
+    }
+  };
+
+  const clearCart = async () => {
+    if (!cartId) return;
+    try {
+      await cartService.clearCart(cartId, authState.accessToken || undefined);
+      setCartItems([]);
+    } catch (error) {
+      console.error('Failed to clear cart:', error);
+    }
+  };
 
   const toggleCart = () => setIsCartOpen(prev => !prev);
-
   const clearAuthError = () => setAuthError(null);
 
   const login = async (email: string, password: string) => {
@@ -143,12 +218,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAuthError(null);
     try {
       const response = await authService.login({ email, password });
+      const token = response.accessToken;
+      
       setAuthState({
-        accessToken: response.accessToken,
+        accessToken: token,
         expiresAt: Date.now() + response.expiresIn * 1000,
       });
-      // Decode JWT to get user info (simplified - just use email)
       setUser({ id: email, email, name: email.split('@')[0] });
+
+      // Merge cart
+      if (sessionId) {
+        const mergedCart = await cartService.mergeCart(sessionId, email, token); // user ID is email in this simple app?
+        // Note: Real user ID might be needed if not email.
+        // Assuming user.id is correct here. If not, we need to decode token.
+        setCartId(mergedCart.id);
+        setCartItems(mergedCart.items);
+      }
     } catch (error) {
       if (error instanceof authService.AuthServiceError) {
         setAuthError(error.message);
@@ -166,11 +251,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAuthError(null);
     try {
       const response = await authService.register({ email, password, name });
+      const token = response.accessToken;
+      
       setAuthState({
-        accessToken: response.accessToken,
+        accessToken: token,
         expiresAt: Date.now() + response.expiresIn * 1000,
       });
       setUser({ id: email, email, name: name || email.split('@')[0] });
+      
+      // Merge cart also for register? Usually just create new or claim guest cart.
+      if (sessionId) {
+        const mergedCart = await cartService.mergeCart(sessionId, email, token);
+        setCartId(mergedCart.id);
+        setCartItems(mergedCart.items);
+      }
     } catch (error) {
       if (error instanceof authService.AuthServiceError) {
         setAuthError(error.message);
@@ -190,19 +284,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         await authService.logout(authState.accessToken);
       }
     } catch {
-      // Ignore logout errors, clear state anyway
+      // Ignore
     } finally {
       setUser(null);
       setAuthState({ accessToken: null, expiresAt: null });
+      setCartItems([]); // Clear cart locally
+      setCartId(null);  // Reset cart ID so we get a guest one next
+      // We keep session ID in localStorage, so next load might pick it up if generic
+      // ideally generated new guest session
+      if (typeof window !== 'undefined') {
+         localStorage.removeItem(SESSION_STORAGE_KEY);
+         const newSessionId = crypto.randomUUID();
+         localStorage.setItem(SESSION_STORAGE_KEY, newSessionId);
+         setSessionId(newSessionId);
+      }
+
       setIsAuthLoading(false);
     }
   };
 
   return (
     <AppContext.Provider value={{
-      cart, user, isCartOpen, isAuthLoading, authError,
-      addToCart, removeFromCart, updateQuantity, clearCart, toggleCart,
-      login, register, logout, clearAuthError
+      cart: cartItems,
+      cartId,
+      user, 
+      isCartOpen, 
+      isAuthLoading, 
+      authError,
+      addToCart, 
+      removeFromCart, 
+      updateQuantity, 
+      clearCart, 
+      toggleCart,
+      login, 
+      register, 
+      logout, 
+      clearAuthError
     }}>
       {children}
     </AppContext.Provider>
@@ -216,3 +333,4 @@ export const useAppContext = () => {
   /* v8 ignore stop */
   return context;
 };
+
