@@ -8,10 +8,13 @@
   },
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev",
+    "dev": "docker compose up -d --wait && turbo dev",
+    "dev:services": "turbo dev",
     "lint": "turbo lint",
     "test": "turbo test",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "infra:up": "docker compose up -d --wait",
+    "infra:down": "docker compose down"
   },
   "devDependencies": {
     "turbo": "^2.5.0",

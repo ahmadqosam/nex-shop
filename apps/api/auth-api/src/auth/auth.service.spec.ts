@@ -19,6 +19,7 @@ describe('AuthService', () => {
   const mockUser: User = {
     id: 'user-uuid-123',
     email: 'test@example.com',
+    name: null,
     passwordHash: 'argon2-hashed-password',
     roles: [Role.USER],
     createdAt: new Date(),

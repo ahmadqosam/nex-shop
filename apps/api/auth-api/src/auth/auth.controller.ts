@@ -7,6 +7,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -15,7 +16,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -91,6 +92,9 @@ export class AuthController {
     this.logger.log('Attempting to refresh token');
     const refreshToken =
       (req.cookies?.refresh_token as string) || dto.refreshToken;
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token is required');
+    }
     const result = await this.authService.refresh(refreshToken);
     this.setRefreshTokenCookie(res, result.refreshToken);
     this.logger.log('Token refresh successful');
@@ -110,6 +114,9 @@ export class AuthController {
     this.logger.log('Logout attempt');
     const refreshToken =
       (req.cookies?.refresh_token as string) || dto.refreshToken;
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token is required');
+    }
     const result = await this.authService.logout(refreshToken);
     this.clearRefreshTokenCookie(res);
     this.logger.log('Logout successful');

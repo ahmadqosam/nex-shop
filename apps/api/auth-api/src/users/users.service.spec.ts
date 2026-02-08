@@ -61,7 +61,7 @@ describe('UsersService', () => {
     });
 
     it('should return null if user not found', async () => {
-      repository.findOne!.mockResolvedValue(null);
+      (repository.findOne as jest.Mock).mockResolvedValue(null);
       const result = await service.findByEmail('unknown@example.com');
       expect(result).toBeNull();
     });
@@ -77,7 +77,7 @@ describe('UsersService', () => {
     });
 
     it('should return null if user not found', async () => {
-      repository.findOne!.mockResolvedValue(null);
+      (repository.findOne as jest.Mock).mockResolvedValue(null);
       const result = await service.findById('unknown-id');
       expect(result).toBeNull();
     });
