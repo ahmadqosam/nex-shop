@@ -13,6 +13,7 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "generate": "bash scripts/scaffold-service.sh",
     "infra:up": "docker compose up -d --wait",
     "infra:down": "docker compose down"
   },

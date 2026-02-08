@@ -12,7 +12,6 @@ build
 .agent
 .agents
 .claude
-docs
 
 # Turbo
 .turbo
