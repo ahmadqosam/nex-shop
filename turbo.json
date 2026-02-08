@@ -12,6 +12,11 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "web#dev": {
+      "dependsOn": ["api#dev"],
+      "cache": false,
+      "persistent": true
     }
   }
 }

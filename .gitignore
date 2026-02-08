@@ -40,6 +40,9 @@ coverage
 playwright-report
 test-results
 
+# Seed images (downloaded via pnpm seed:images)
+apps/api/product-api/public/images/
+
 # Debug logs
 npm-debug.log*
 pnpm-debug.log*

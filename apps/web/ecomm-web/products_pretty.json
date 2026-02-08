@@ -1,0 +1,225 @@
+{
+    "data": [
+        {
+            "id": "7c0c43d5-51a8-4c85-b667-f37b5aa40520",
+            "name": "Move 2",
+            "slug": "move-2",
+            "category": "Portable Speaker",
+            "basePriceInCents": 44900,
+            "currency": "USD",
+            "description": "Premium portable smart speaker with stereo sound and 24-hour battery life. Automatic Trueplay tuning adapts to your environment.",
+            "tags": [
+                "Best Seller"
+            ],
+            "images": [
+                "/images/products/move-2-1.jpg",
+                "/images/products/move-2-2.jpg"
+            ],
+            "specifications": {
+                "depth": "126mm",
+                "width": "160mm",
+                "height": "241mm",
+                "weight": "3kg",
+                "battery_life": "24 hours",
+                "water_resistance": "IP56"
+            },
+            "isAvailable": true,
+            "weightInGrams": 3000,
+            "variants": [
+                {
+                    "id": "d9e81794-f25b-4959-9d23-ea16429fd64e",
+                    "sku": "MOVE2-BLK",
+                    "name": "Black",
+                    "priceInCents": null,
+                    "attributes": {
+                        "color": "#000000"
+                    }
+                },
+                {
+                    "id": "011fa104-b881-4836-8a63-964bdc787805",
+                    "sku": "MOVE2-WHT",
+                    "name": "White",
+                    "priceInCents": null,
+                    "attributes": {
+                        "color": "#FFFFFF"
+                    }
+                }
+            ],
+            "createdAt": "2026-02-08T07:06:17.262Z",
+            "updatedAt": "2026-02-08T07:06:17.262Z"
+        },
+        {
+            "id": "2e335b04-e7bf-4437-97a7-ae8740df2b25",
+            "name": "Roam 2 Charging Set",
+            "slug": "roam-2-charging-set",
+            "category": "Portable Speaker",
+            "basePriceInCents": 22800,
+            "currency": "USD",
+            "description": "Ultra-portable smart speaker with wireless charging dock. Outdoor-ready with IP67 water and dust resistance. Perfect for adventures.",
+            "tags": [
+                "Bundle",
+                "Sale"
+            ],
+            "images": [
+                "/images/products/roam-2-1.jpg",
+                "/images/products/roam-2-2.jpg"
+            ],
+            "specifications": {
+                "depth": "60mm",
+                "width": "62mm",
+                "height": "168mm",
+                "weight": "0.43kg",
+                "battery_life": "10 hours",
+                "water_resistance": "IP67"
+            },
+            "isAvailable": true,
+            "weightInGrams": 430,
+            "variants": [
+                {
+                    "id": "cc0be08f-d964-464b-b332-4de937205c67",
+                    "sku": "ROAM2-SET-BLK",
+                    "name": "Black",
+                    "priceInCents": null,
+                    "attributes": {
+                        "color": "#000000"
+                    }
+                },
+                {
+                    "id": "117437f7-053a-4d9a-85be-c292a9e20f9f",
+                    "sku": "ROAM2-SET-WHT",
+                    "name": "White",
+                    "priceInCents": null,
+                    "attributes": {
+                        "color": "#FFFFFF"
+                    }
+                },
+                {
+                    "id": "4b8403f9-769d-4153-8b7a-8c6dbc9ef35f",
+                    "sku": "ROAM2-SET-ORG",
+                    "name": "Sunset Orange",
+                    "priceInCents": 24800,
+                    "attributes": {
+                        "color": "#FF6B35"
+                    }
+                }
+            ],
+            "createdAt": "2026-02-08T07:06:17.253Z",
+            "updatedAt": "2026-02-08T07:06:17.253Z"
+        },
+        {
+            "id": "5d363677-2fbe-4154-aec2-b9f71bd6e5f8",
+            "name": "Beam (Gen 2)",
+            "slug": "beam-gen-2",
+            "category": "Soundbar",
+            "basePriceInCents": 99900,
+            "currency": "USD",
+            "description": "Premium smart soundbar with Dolby Atmos support for immersive home theater experience. Features built-in voice assistants and multi-room audio capabilities.",
+            "tags": [
+                "Premium"
+            ],
+            "images": [
+                "/images/products/beam-gen2-1.jpg",
+                "/images/products/beam-gen2-2.jpg"
+            ],
+            "specifications": {
+                "depth": "69mm",
+                "width": "651mm",
+                "height": "100mm",
+                "weight": "2.8kg",
+                "audio_format": "Dolby Atmos, DTS:X",
+                "connectivity": "HDMI eARC, WiFi, Bluetooth"
+            },
+            "isAvailable": true,
+            "weightInGrams": 2800,
+            "variants": [
+                {
+                    "id": "517f5e72-f533-4627-a52c-a2a12ad12d9f",
+                    "sku": "BEAM-GEN2-BLK",
+                    "name": "Black",
+                    "priceInCents": null,
+                    "attributes": {
+                        "color": "#000000"
+                    }
+                },
+                {
+                    "id": "a0301e8e-f553-4b21-8729-6f51966dd82f",
+                    "sku": "BEAM-GEN2-WHT",
+                    "name": "White",
+                    "priceInCents": null,
+                    "attributes": {
+                        "color": "#FFFFFF"
+                    }
+                }
+            ],
+            "createdAt": "2026-02-08T07:06:17.234Z",
+            "updatedAt": "2026-02-08T07:06:17.234Z"
+        },
+        {
+            "id": "14b29fe0-39cb-4110-b43a-44c6183df299",
+            "name": "Nex Ace",
+            "slug": "nex-ace",
+            "category": "Headphone",
+            "basePriceInCents": 44900,
+            "currency": "USD",
+            "description": "Revolutionize your space with high-fidelity sound and smart technology. Our premium wireless headphones deliver exceptional audio quality with active noise cancellation.",
+            "tags": [
+                "New Arrival",
+                "Best Seller"
+            ],
+            "images": [
+                "/images/products/nex-ace-1.jpg",
+                "/images/products/nex-ace-2.jpg",
+                "/images/products/nex-ace-3.jpg"
+            ],
+            "specifications": {
+                "weight": "280g",
+                "bluetooth": "5.2",
+                "driver_size": "40mm",
+                "battery_life": "30 hours",
+                "frequency_response": "20Hz - 20kHz",
+                "noise_cancellation": "Active"
+            },
+            "isAvailable": true,
+            "weightInGrams": 280,
+            "variants": [
+                {
+                    "id": "f4eada2a-faae-4cbb-979f-37e9909d3b02",
+                    "sku": "NEX-ACE-BLK",
+                    "name": "Black",
+                    "priceInCents": null,
+                    "attributes": {
+                        "color": "#000000"
+                    }
+                },
+                {
+                    "id": "1caa279a-ebc1-4bb5-91de-0624f34ab8c6",
+                    "sku": "NEX-ACE-WHT",
+                    "name": "White",
+                    "priceInCents": null,
+                    "attributes": {
+                        "color": "#FFFFFF"
+                    }
+                },
+                {
+                    "id": "fc25dc5f-6ccc-41fe-9194-0b315ecf6d4f",
+                    "sku": "NEX-ACE-NVY",
+                    "name": "Navy Blue",
+                    "priceInCents": 47900,
+                    "attributes": {
+                        "color": "#1E3A5F"
+                    }
+                }
+            ],
+            "createdAt": "2026-02-08T07:06:17.172Z",
+            "updatedAt": "2026-02-08T07:06:17.172Z"
+        }
+    ],
+    "meta": {
+        "page": 1,
+        "limit": 10,
+        "total": 4,
+        "totalPages": 1,
+        "hasPrevious": false,
+        "hasNext": false
+    }
+}

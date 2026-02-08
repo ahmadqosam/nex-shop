@@ -27,3 +27,67 @@ export interface AppState {
   user: User | null;
   isCartOpen: boolean;
 }
+
+// API DTOs
+export interface VariantAttributesDto {
+  color?: string;
+  size?: string;
+  storage?: string;
+  [key: string]: string | undefined;
+}
+
+export interface VariantResponseDto {
+  id: string;
+  sku: string;
+  name: string;
+  priceInCents: number | null;
+  attributes: VariantAttributesDto;
+}
+
+export interface ProductSpecificationsDto {
+  driver_size?: string;
+  battery_life?: string;
+  bluetooth?: string;
+  weight?: string;
+  width?: string;
+  height?: string;
+  depth?: string;
+  water_resistance?: string;
+  frequency_response?: string;
+  noise_cancellation?: string;
+  audio_format?: string;
+  connectivity?: string;
+  [key: string]: string | undefined;
+}
+
+export interface ProductResponseDto {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  basePriceInCents: number;
+  currency: string;
+  description: string;
+  tags: string[];
+  images: string[];
+  specifications: ProductSpecificationsDto;
+  isAvailable: boolean;
+  weightInGrams: number;
+  variants: VariantResponseDto[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaginationMetaDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+}
+
+export interface PaginatedProductsResponseDto {
+  data: ProductResponseDto[];
+  meta: PaginationMetaDto;
+}

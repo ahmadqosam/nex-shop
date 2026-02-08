@@ -14,6 +14,7 @@
     "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "generate": "bash scripts/scaffold-service.sh",
+    "seed:images": "bash scripts/download-seed-images.sh",
     "infra:up": "docker compose up -d --wait",
     "infra:down": "docker compose down"
   },

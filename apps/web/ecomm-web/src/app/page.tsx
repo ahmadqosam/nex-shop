@@ -2,10 +2,15 @@ import React from 'react';
 import { ArrowRight, Play } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { PRODUCTS } from '../constants';
 import { ProductCard } from '../components/ProductCard';
+import { getAllProducts } from '../services/productService';
 
-export default function HomePage() {
+export const revalidate = 3600; // ISR: Revalidate every hour
+
+export default async function HomePage() {
+  const products = await getAllProducts();
+  const featuredProduct = products.length > 0 ? products[0] : null;
+
   return (
     <div className="overflow-x-hidden">
       {/* Hero Section */}
@@ -35,39 +40,45 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="hidden md:block bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-3xl max-w-xs group cursor-pointer">
-            <div className="relative overflow-hidden rounded-2xl mb-4 bg-gray-200 aspect-square">
-               <Image 
-                  src={PRODUCTS[0].image} 
-                  alt="Featured Product" 
-                  fill
-                  className="object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-110" 
-                />
-            </div>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Nex Ace</p>
-                <p className="text-white font-bold">See the Product Details</p>
-              </div>
-              <div className="bg-white/20 p-2 rounded-full text-white">
-                <ArrowRight size={18} />
-              </div>
-            </div>
-          </div>
+          {featuredProduct && (
+            <Link href={`/product/${featuredProduct.id}`}>
+                <div className="hidden md:block bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-3xl max-w-xs group cursor-pointer decoration-transparent">
+                    <div className="relative overflow-hidden rounded-2xl mb-4 bg-gray-200 aspect-square">
+                    <Image 
+                        src={featuredProduct.image} 
+                        alt="Featured Product" 
+                        fill
+                        className="object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-110" 
+                        />
+                    </div>
+                    <div className="flex justify-between items-center text-left">
+                    <div>
+                        <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">{featuredProduct.name}</p>
+                        <p className="text-white font-bold">See the Product Details</p>
+                    </div>
+                    <div className="bg-white/20 p-2 rounded-full text-white">
+                        <ArrowRight size={18} />
+                    </div>
+                    </div>
+                </div>
+            </Link>
+          )}
         </div>
       </section>
 
       {/* Philosophy Section */}
       <section className="py-32 bg-white text-center">
         <div className="container mx-auto px-4 max-w-4xl">
-          <div className="mb-12 relative h-64 md:h-96 w-full max-w-lg mx-auto overflow-visible">
-             <Image 
-               src={PRODUCTS[0].image} 
-               alt="Headphone Float" 
-               fill
-               className="object-contain drop-shadow-2xl animate-bounce-slow"
-             />
-          </div>
+          {featuredProduct && (
+            <div className="mb-12 relative h-64 md:h-96 w-full max-w-lg mx-auto overflow-visible">
+                <Image 
+                src={featuredProduct.image} 
+                alt="Headphone Float" 
+                fill
+                className="object-contain drop-shadow-2xl animate-bounce-slow"
+                />
+            </div>
+          )}
           <h2 className="text-4xl md:text-6xl font-bold tracking-tighter leading-tight">
             From pioneering wireless audio to designing state-of-the-art speakers, Nex's commitment to innovation that drives and inspires.
           </h2>
@@ -82,18 +93,18 @@ export default function HomePage() {
                <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">Designed for seamless sound and advanced technology.</h2>
              </div>
              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden border border-gray-200 relative">
-                  <Image src="https://picsum.photos/seed/face/200" alt="Reviewer" fill className="object-cover" />
-                </div>
-                <div className="text-sm">
-                  <p className="font-bold">Amazing clarity.</p>
-                  <p className="text-gray-500">Alex J., Music Producer</p>
-                </div>
-             </div>
+                 <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden border border-gray-200 relative">
+                   <Image src="https://picsum.photos/seed/face/200" alt="Reviewer" fill className="object-cover" />
+                 </div>
+                 <div className="text-sm">
+                   <p className="font-bold">Amazing clarity.</p>
+                   <p className="text-gray-500">Alex J., Music Producer</p>
+                 </div>
+              </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {PRODUCTS.map(product => (
+            {products.slice(0, 4).map(product => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
