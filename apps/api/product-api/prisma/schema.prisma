@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id                   String    @id @default(uuid())
+  name                 String
+  slug                 String    @unique
+  category             String
+
+  // Base pricing in cents (variants can override)
+  basePriceInCents     Int       @map("base_price_in_cents")
+  currency             String    @default("USD")
+
+  // Product details
+  description          String?
+  tags                 String[]  @default([])
+  images               String[]  @default([])
+  specifications       Json?
+
+  // Availability
+  isAvailable          Boolean   @default(true) @map("is_available")
+
+  // Shipping
+  weightInGrams        Int?      @map("weight_in_grams")
+
+  // Variants
+  variants             Variant[]
+
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  @@map("products")
+}
+
+model Variant {
+  id           String   @id @default(uuid())
+  sku          String   @unique
+  name         String   // "Black", "White", "256GB", etc.
+  
+  // Price override (null = use product basePriceInCents)
+  priceInCents Int?     @map("price_in_cents")
+  
+  // Flexible attributes: { color: "#000000", size: "L" }
+  attributes   Json     @default("{}")
+  
+  // Relation to Product
+  productId    String   @map("product_id")
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("variants")
+}

@@ -1,0 +1,163 @@
+[
+  {
+    "name": "Nex Ace",
+    "slug": "nex-ace",
+    "category": "Headphone",
+    "basePriceInCents": 44900,
+    "currency": "USD",
+    "description": "Revolutionize your space with high-fidelity sound and smart technology. Our premium wireless headphones deliver exceptional audio quality with active noise cancellation.",
+    "tags": ["New Arrival", "Best Seller"],
+    "images": [
+      "/images/products/nex-ace-1.jpg",
+      "/images/products/nex-ace-2.jpg",
+      "/images/products/nex-ace-3.jpg"
+    ],
+    "specifications": {
+      "driver_size": "40mm",
+      "battery_life": "30 hours",
+      "bluetooth": "5.2",
+      "weight": "280g",
+      "frequency_response": "20Hz - 20kHz",
+      "noise_cancellation": "Active"
+    },
+    "isAvailable": true,
+    "weightInGrams": 280,
+    "variants": [
+      {
+        "sku": "NEX-ACE-BLK",
+        "name": "Black",
+        "priceInCents": null,
+        "attributes": { "color": "#000000" }
+      },
+      {
+        "sku": "NEX-ACE-WHT",
+        "name": "White",
+        "priceInCents": null,
+        "attributes": { "color": "#FFFFFF" }
+      },
+      {
+        "sku": "NEX-ACE-NVY",
+        "name": "Navy Blue",
+        "priceInCents": 47900,
+        "attributes": { "color": "#1E3A5F" }
+      }
+    ]
+  },
+  {
+    "name": "Beam (Gen 2)",
+    "slug": "beam-gen-2",
+    "category": "Soundbar",
+    "basePriceInCents": 99900,
+    "currency": "USD",
+    "description": "Premium smart soundbar with Dolby Atmos support for immersive home theater experience. Features built-in voice assistants and multi-room audio capabilities.",
+    "tags": ["Premium"],
+    "images": [
+      "/images/products/beam-gen2-1.jpg",
+      "/images/products/beam-gen2-2.jpg"
+    ],
+    "specifications": {
+      "width": "651mm",
+      "height": "100mm",
+      "depth": "69mm",
+      "weight": "2.8kg",
+      "audio_format": "Dolby Atmos, DTS:X",
+      "connectivity": "HDMI eARC, WiFi, Bluetooth"
+    },
+    "isAvailable": true,
+    "weightInGrams": 2800,
+    "variants": [
+      {
+        "sku": "BEAM-GEN2-BLK",
+        "name": "Black",
+        "priceInCents": null,
+        "attributes": { "color": "#000000" }
+      },
+      {
+        "sku": "BEAM-GEN2-WHT",
+        "name": "White",
+        "priceInCents": null,
+        "attributes": { "color": "#FFFFFF" }
+      }
+    ]
+  },
+  {
+    "name": "Roam 2 Charging Set",
+    "slug": "roam-2-charging-set",
+    "category": "Portable Speaker",
+    "basePriceInCents": 22800,
+    "currency": "USD",
+    "description": "Ultra-portable smart speaker with wireless charging dock. Outdoor-ready with IP67 water and dust resistance. Perfect for adventures.",
+    "tags": ["Bundle", "Sale"],
+    "images": [
+      "/images/products/roam-2-1.jpg",
+      "/images/products/roam-2-2.jpg"
+    ],
+    "specifications": {
+      "height": "168mm",
+      "width": "62mm",
+      "depth": "60mm",
+      "weight": "0.43kg",
+      "battery_life": "10 hours",
+      "water_resistance": "IP67"
+    },
+    "isAvailable": true,
+    "weightInGrams": 430,
+    "variants": [
+      {
+        "sku": "ROAM2-SET-BLK",
+        "name": "Black",
+        "priceInCents": null,
+        "attributes": { "color": "#000000" }
+      },
+      {
+        "sku": "ROAM2-SET-WHT",
+        "name": "White",
+        "priceInCents": null,
+        "attributes": { "color": "#FFFFFF" }
+      },
+      {
+        "sku": "ROAM2-SET-ORG",
+        "name": "Sunset Orange",
+        "priceInCents": 24800,
+        "attributes": { "color": "#FF6B35" }
+      }
+    ]
+  },
+  {
+    "name": "Move 2",
+    "slug": "move-2",
+    "category": "Portable Speaker",
+    "basePriceInCents": 44900,
+    "currency": "USD",
+    "description": "Premium portable smart speaker with stereo sound and 24-hour battery life. Automatic Trueplay tuning adapts to your environment.",
+    "tags": ["Best Seller"],
+    "images": [
+      "/images/products/move-2-1.jpg",
+      "/images/products/move-2-2.jpg"
+    ],
+    "specifications": {
+      "height": "241mm",
+      "width": "160mm",
+      "depth": "126mm",
+      "weight": "3kg",
+      "battery_life": "24 hours",
+      "water_resistance": "IP56"
+    },
+    "isAvailable": true,
+    "weightInGrams": 3000,
+    "variants": [
+      {
+        "sku": "MOVE2-BLK",
+        "name": "Black",
+        "priceInCents": null,
+        "attributes": { "color": "#000000" }
+      },
+      {
+        "sku": "MOVE2-WHT",
+        "name": "White",
+        "priceInCents": null,
+        "attributes": { "color": "#FFFFFF" }
+      }
+    ]
+  }
+]

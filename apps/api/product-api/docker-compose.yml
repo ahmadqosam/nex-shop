@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_USER: product_user
+      POSTGRES_PASSWORD: product_password
+      POSTGRES_DB: product_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6381:6379'
+
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - '4567:4566'
+    environment:
+      - SERVICES=lambda,apigateway,iam,logs,s3,cloudformation
+      - DEBUG=1
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+
+volumes:
+  pgdata:
