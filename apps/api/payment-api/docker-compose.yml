@@ -1,0 +1,45 @@
+services:
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - '4571:4566'
+    environment:
+      - SERVICES=lambda,apigateway,iam,logs,s3,cloudformation,sns
+      - DEBUG=1
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+
+  localstack-init:
+    image: amazon/aws-cli:latest
+    depends_on:
+      - localstack
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+    entrypoint:
+      - sh
+      - -c
+      - |
+        sleep 5;
+        aws --endpoint-url=http://localstack:4566 sns create-topic --name payment-events;
+        aws --endpoint-url=http://localstack:4566 sqs create-queue --queue-name payment-events-dlq;
+        aws --endpoint-url=http://localstack:4566 sqs create-queue --queue-name payment-events-queue --attributes '{"RedrivePolicy": "{\"deadLetterTargetArn\":\"arn:aws:sqs:us-east-1:000000000000:payment-events-dlq\",\"maxReceiveCount\":\"3\"}"}';
+        aws --endpoint-url=http://localstack:4566 sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:payment-events --protocol sqs --notification-endpoint arn:aws:sqs:us-east-1:000000000000:payment-events-queue
+
+  localstripe:
+    image: adrienverge/localstripe:latest
+    ports:
+      - '8420:8420'
+
+  localstripe-init:
+    image: curlimages/curl:latest
+    depends_on:
+      - localstripe
+    restart: 'no'
+    entrypoint:
+      [
+        'sh',
+        '-c',
+        'sleep 3 && curl -s -X POST http://localstripe:8420/_config/webhooks/payment_webhook -d url=http://host.docker.internal:4006/payments/webhook -d secret=whsec_test_secret',
+      ]

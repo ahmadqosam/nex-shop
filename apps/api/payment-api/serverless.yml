@@ -1,0 +1,58 @@
+service: payment-api
+
+frameworkVersion: '3'
+
+plugins:
+  - serverless-localstack
+
+custom:
+  localstack:
+    stages:
+      - local
+    host: http://localhost:4571
+    edgePort: 4571
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  stage: ${opt:stage, 'local'}
+  memorySize: 512
+  timeout: 30
+  environment:
+    NODE_ENV: production
+    RSA_PUBLIC_KEY: ${env:RSA_PUBLIC_KEY, ''}
+    STRIPE_SECRET_KEY: ${env:STRIPE_SECRET_KEY, ''}
+    STRIPE_WEBHOOK_SECRET: ${env:STRIPE_WEBHOOK_SECRET, ''}
+    STRIPE_API_URL: ${env:STRIPE_API_URL, 'http://localstripe:8420'}
+    SNS_ENDPOINT: ${env:SNS_ENDPOINT, 'http://localhost:4571'}
+    AWS_REGION: us-east-1
+    SNS_TOPIC_ARN: ${env:SNS_TOPIC_ARN, 'arn:aws:sns:us-east-1:000000000000:payment-events'}
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - sns:Publish
+          Resource: '*'
+
+functions:
+  api:
+    handler: dist/lambda.handler
+    events:
+      - http:
+          method: ANY
+          path: /
+      - http:
+          method: ANY
+          path: '{proxy+}'
+
+package:
+  individually: true
+  patterns:
+    - '!src/**'
+    - '!test/**'
+    - '!.env*'
+    - 'dist/**'
+    - 'node_modules/**'
