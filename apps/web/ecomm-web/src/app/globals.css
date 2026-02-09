@@ -34,3 +34,60 @@ h5,
 h6 {
   font-family: var(--font-serif);
 }
+
+/* Safari Compatibility Fixes */
+input[type="date"] {
+  -webkit-appearance: none;
+  min-height: 3rem;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none !important;
+  -webkit-appearance: none !important;
+}
+
+select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: none !important;
+}
+
+/* Hide native arrows in IE/Edge */
+select::-ms-expand {
+  display: none;
+}
+
+/* Fix for Safari aspect-ratio rendering */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+@supports not (aspect-ratio: 1 / 1) {
+  .aspect-square {
+    padding-bottom: 100%;
+    position: relative;
+    height: 0;
+  }
+  .aspect-square > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+/* Fix for Safari backdrop-filter */
+.backdrop-blur-sm {
+  -webkit-backdrop-filter: blur(4px);
+}
+.backdrop-blur-md {
+  -webkit-backdrop-filter: blur(12px);
+}
+.backdrop-blur-lg {
+  -webkit-backdrop-filter: blur(16px);
+}
+.backdrop-blur-xl {
+  -webkit-backdrop-filter: blur(24px);
+}
