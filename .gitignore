@@ -46,3 +46,6 @@ apps/api/product-api/public/images/
 # Debug logs
 npm-debug.log*
 pnpm-debug.log*
+
+# TypeScript incremental build cache
+*.tsbuildinfo

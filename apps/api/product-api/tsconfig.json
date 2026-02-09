@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "resolvePackageJsonExports": true,
     "esModuleInterop": true,
+    "isolatedModules": true,
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -12,7 +14,6 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    "rootDir": "src",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -20,8 +21,5 @@
     "noImplicitAny": true,
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true
-  },
-  "exclude": ["node_modules", "test", "dist", "**/*spec.ts", "prisma", "scripts", "public"],
-  "include": ["src/**/*"],
-  "files": ["src/main.ts"]
+  }
 }
