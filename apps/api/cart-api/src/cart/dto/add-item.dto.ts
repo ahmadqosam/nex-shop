@@ -44,7 +44,6 @@ export class AddItemDto {
   variantName: string;
 
   @ApiProperty({ description: 'Image URL for display', required: false })
-  @IsUrl()
   @IsOptional()
   imageUrl?: string;
 }

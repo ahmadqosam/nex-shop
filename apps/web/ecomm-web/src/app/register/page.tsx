@@ -19,7 +19,8 @@ export default function RegisterPage() {
     try {
       await register(email, password, name || undefined);
       router.push('/');
-    } catch {
+    } catch (err) {
+      console.error('Registration failed:', err);
       // Error is already set in context
     }
   };

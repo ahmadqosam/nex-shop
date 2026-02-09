@@ -30,17 +30,74 @@ function getHeaders(token?: string): HeadersInit {
   return headers;
 }
 
+// Need to define backend types if not imported, or use any for raw response
+interface ApiCart {
+  id: string;
+  userId?: string;
+  sessionId?: string;
+  items: ApiCartItem[];
+  status: string;
+  expiresAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ApiCartItem {
+  id: string;
+  cartId: string;
+  productId: string;
+  variantId: string;
+  sku: string;
+  quantity: number;
+  priceInCents: number;
+  currency: string;
+  productName: string;
+  variantName: string;
+  imageUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+function transformCart(apiCart: ApiCart): Cart {
+  return {
+    id: apiCart.id,
+    userId: apiCart.userId,
+    sessionId: apiCart.sessionId,
+    items: apiCart.items.map(item => ({
+      id: item.id,
+      productId: item.productId,
+      variantId: item.variantId,
+      productName: item.productName,
+      variantName: item.variantName,
+      sku: item.sku,
+      price: item.priceInCents / 100,
+      quantity: item.quantity,
+      image: item.imageUrl || '',
+      subtotal: (item.priceInCents * item.quantity) / 100,
+    })),
+    totalQuantity: apiCart.items.reduce((sum, item) => sum + item.quantity, 0),
+    totalAmount: apiCart.items.reduce((sum, item) => sum + item.priceInCents * item.quantity, 0) / 100,
+    createdAt: apiCart.createdAt,
+    updatedAt: apiCart.updatedAt,
+  };
+}
+
 export const cartService = {
   async getCart(userId?: string, sessionId?: string, token?: string): Promise<Cart> {
-    const params = new URLSearchParams();
-    if (userId) params.append('userId', userId);
-    if (sessionId) params.append('sessionId', sessionId);
+    const headers = getHeaders(token);
+    if (userId) {
+      (headers as Record<string, string>)['x-user-id'] = userId;
+    }
+    if (sessionId) {
+      (headers as Record<string, string>)['x-session-id'] = sessionId;
+    }
 
-    const response = await fetch(`${API_BASE}?${params.toString()}`, {
+    const response = await fetch(`${API_BASE}`, {
       method: 'GET',
-      headers: getHeaders(token),
+      headers,
     });
-    return handleResponse<Cart>(response);
+    const data = await handleResponse<ApiCart>(response);
+    return transformCart(data);
   },
 
   async getCartSummary(cartId: string, token?: string): Promise<any> {
@@ -57,7 +114,8 @@ export const cartService = {
       headers: getHeaders(token),
       body: JSON.stringify(item),
     });
-    return handleResponse<Cart>(response);
+    const data = await handleResponse<ApiCart>(response);
+    return transformCart(data);
   },
 
   async updateItem(
@@ -71,7 +129,8 @@ export const cartService = {
       headers: getHeaders(token),
       body: JSON.stringify({ quantity }),
     });
-    return handleResponse<Cart>(response);
+    const data = await handleResponse<ApiCart>(response);
+    return transformCart(data);
   },
 
   async removeItem(cartId: string, itemId: string, token?: string): Promise<Cart> {
@@ -79,7 +138,8 @@ export const cartService = {
       method: 'DELETE',
       headers: getHeaders(token),
     });
-    return handleResponse<Cart>(response);
+    const data = await handleResponse<ApiCart>(response);
+    return transformCart(data);
   },
 
   async clearCart(cartId: string, token?: string): Promise<void> {
@@ -102,6 +162,7 @@ export const cartService = {
       method: 'POST',
       headers: getHeaders(token),
     });
-    return handleResponse<Cart>(response);
+    const data = await handleResponse<ApiCart>(response);
+    return transformCart(data);
   }
 };

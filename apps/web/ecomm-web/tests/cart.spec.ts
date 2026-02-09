@@ -5,7 +5,10 @@ const getUniqueEmail = () => `cart-test-${Date.now()}-${Math.random().toString(3
 const testPassword = 'Password123!';
 
 test.describe('Cart Flow', () => {
-  
+  test.beforeEach(async ({ page }) => {
+    page.on('console', msg => console.log(`[Browser Console]: ${msg.text()}`));
+  });
+
   test('Guest User Flow - Add, Update, Remove, Persist', async ({ page }) => {
     // 1. Navigate to a product page
     await page.goto('/');

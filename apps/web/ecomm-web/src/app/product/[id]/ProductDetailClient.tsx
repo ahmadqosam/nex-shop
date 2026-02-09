@@ -20,14 +20,19 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
   const handleAddToCart = () => {
     setIsAdding(true);
+    
+    const variant = product.variants?.find(v => v.attributes.color === selectedColor);
+    
     addToCart({
       id: product.id,
       name: product.name,
-      price: product.price, // API returns price in dollars now
+      price: product.price, 
       image: product.image,
-      quantity: quantity,
-      color: selectedColor
-    } as any, quantity);
+      category: product.category,
+      description: product.description,
+      stock: product.stock || 0,
+      variants: product.variants
+    }, quantity, variant);
 
     toggleCart();
 

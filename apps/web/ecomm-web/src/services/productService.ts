@@ -56,6 +56,15 @@ function transformProduct(dto: ProductResponseDto): Product {
     });
   }
 
+  const variants = dto.variants?.map(v => ({
+    id: v.id,
+    sku: v.sku,
+    name: v.name,
+    price: v.priceInCents ? v.priceInCents / 100 : dto.basePriceInCents / 100, // Use variant price if available, else base price
+    stock: 100, // Placeholder as stock info is not in product-api response yet (or use inventory-api separately)
+    attributes: v.attributes as Record<string, string>,
+  })) || [];
+
   return {
     id: dto.id,
     name: dto.name,
@@ -68,6 +77,7 @@ function transformProduct(dto: ProductResponseDto): Product {
     isNew: new Date(dto.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000, 
     isBestSeller: false, // Default
     colors: colors.length > 0 ? colors : undefined,
+    variants,
   };
 }
 

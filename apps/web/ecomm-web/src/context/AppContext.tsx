@@ -227,7 +227,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setUser({ id: email, email, name: email.split('@')[0] });
 
       // Merge cart
-      if (sessionId) {
+      if (sessionId && cartItems.length > 0) {
         const mergedCart = await cartService.mergeCart(sessionId, email, token); // user ID is email in this simple app?
         // Note: Real user ID might be needed if not email.
         // Assuming user.id is correct here. If not, we need to decode token.
@@ -260,7 +260,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setUser({ id: email, email, name: name || email.split('@')[0] });
       
       // Merge cart also for register? Usually just create new or claim guest cart.
-      if (sessionId) {
+      if (sessionId && cartItems.length > 0) {
         const mergedCart = await cartService.mergeCart(sessionId, email, token);
         setCartId(mergedCart.id);
         setCartItems(mergedCart.items);

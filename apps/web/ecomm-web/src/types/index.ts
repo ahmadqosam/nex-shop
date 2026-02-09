@@ -9,7 +9,12 @@ export interface Product {
   description: string;
   image: string;
   category: string;
-  stock: number;
+  stock?: number;
+  features?: string[];
+  specs?: Record<string, string>;
+  isNew?: boolean;
+  isBestSeller?: boolean;
+  colors?: string[];
   variants?: ProductVariant[];
 }
 

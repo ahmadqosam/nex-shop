@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PORTS="3000 4001 4002 4003 4004"
+PORTS="3000 4001 4002 4003 4004 4005"
 
 echo "🧹 Cleaning up ports: $PORTS..."
 
