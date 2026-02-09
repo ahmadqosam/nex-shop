@@ -8,7 +8,7 @@
     "description": "Revolutionize your space with high-fidelity sound and smart technology. Our premium wireless headphones deliver exceptional audio quality with active noise cancellation.",
     "tags": ["New Arrival", "Best Seller"],
     "images": [
-      "/images/products/nex-ace-1.jpg",
+      "/images/products/nex-ace.png",
       "/images/products/nex-ace-2.jpg",
       "/images/products/nex-ace-3.jpg"
     ],
@@ -52,7 +52,7 @@
     "description": "Premium smart soundbar with Dolby Atmos support for immersive home theater experience. Features built-in voice assistants and multi-room audio capabilities.",
     "tags": ["Premium"],
     "images": [
-      "/images/products/beam-gen2-1.jpg",
+      "/images/products/beam-gen2.png",
       "/images/products/beam-gen2-2.jpg"
     ],
     "specifications": {
@@ -89,7 +89,7 @@
     "description": "Ultra-portable smart speaker with wireless charging dock. Outdoor-ready with IP67 water and dust resistance. Perfect for adventures.",
     "tags": ["Bundle", "Sale"],
     "images": [
-      "/images/products/roam-2-1.jpg",
+      "/images/products/roam-2.png",
       "/images/products/roam-2-2.jpg"
     ],
     "specifications": {
@@ -132,7 +132,7 @@
     "description": "Premium portable smart speaker with stereo sound and 24-hour battery life. Automatic Trueplay tuning adapts to your environment.",
     "tags": ["Best Seller"],
     "images": [
-      "/images/products/move-2-1.jpg",
+      "/images/products/move-2.png",
       "/images/products/move-2-2.jpg"
     ],
     "specifications": {
