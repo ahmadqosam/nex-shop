@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/order-api-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+model Order {
+  id                  String      @id @default(uuid())
+  orderNumber         String      @unique @map("order_number")
+  userId              String      @map("user_id")
+  email               String
+  status              OrderStatus @default(PENDING)
+  items               OrderItem[]
+  shippingAddress     Json        @map("shipping_address")
+  subtotalInCents     Int         @map("subtotal_in_cents")
+  shippingCostInCents Int         @default(0) @map("shipping_cost_in_cents")
+  totalInCents        Int         @map("total_in_cents")
+  currency            String      @default("USD")
+  notes               String?
+  paidAt              DateTime?   @map("paid_at")
+  shippedAt           DateTime?   @map("shipped_at")
+  deliveredAt         DateTime?   @map("delivered_at")
+  cancelledAt         DateTime?   @map("cancelled_at")
+  cancellationReason  String?     @map("cancellation_reason")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                String   @id @default(uuid())
+  orderId           String   @map("order_id")
+  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId         String   @map("product_id")
+  variantId         String   @map("variant_id")
+  sku               String
+  quantity          Int
+  unitPriceInCents  Int      @map("unit_price_in_cents")
+  totalPriceInCents Int      @map("total_price_in_cents")
+  currency          String   @default("USD")
+  productName       String   @map("product_name")
+  variantName       String   @map("variant_name")
+  imageUrl          String?  @map("image_url")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("order_items")
+}

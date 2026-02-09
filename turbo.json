@@ -26,8 +26,18 @@
       "cache": false,
       "persistent": true
     },
+    "cart-api#dev": {
+      "dependsOn": ["cart-api#prisma:generate"],
+      "cache": false,
+      "persistent": true
+    },
+    "order-api#dev": {
+      "dependsOn": ["order-api#prisma:generate"],
+      "cache": false,
+      "persistent": true
+    },
     "ecomm-web#dev": {
-      "dependsOn": ["product-api#prisma:generate", "inventory-api#prisma:generate"],
+      "dependsOn": ["product-api#prisma:generate", "inventory-api#prisma:generate", "cart-api#prisma:generate", "order-api#prisma:generate"],
       "cache": false,
       "persistent": true
     }

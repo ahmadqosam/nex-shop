@@ -1,0 +1,176 @@
+[
+  {
+    "orderNumber": "ORD-20260201-A1B2",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "email": "jane@example.com",
+    "status": "DELIVERED",
+    "shippingAddress": {
+      "fullName": "Jane Doe",
+      "addressLine1": "123 Main St",
+      "addressLine2": "Apt 4B",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "US",
+      "phone": "+1-555-0101"
+    },
+    "notes": null,
+    "paidAt": "2026-02-01T10:30:00Z",
+    "shippedAt": "2026-02-02T14:00:00Z",
+    "deliveredAt": "2026-02-05T09:15:00Z",
+    "items": [
+      {
+        "productId": "00000000-0000-0000-0000-000000000010",
+        "variantId": "00000000-0000-0000-0000-000000000011",
+        "sku": "NEX-ACE-BLK",
+        "quantity": 1,
+        "unitPriceInCents": 34999,
+        "currency": "USD",
+        "productName": "Nex Ace",
+        "variantName": "Midnight Black",
+        "imageUrl": "/images/products/nex-ace-1.jpg"
+      }
+    ]
+  },
+  {
+    "orderNumber": "ORD-20260203-C3D4",
+    "userId": "00000000-0000-0000-0000-000000000002",
+    "email": "john@example.com",
+    "status": "SHIPPED",
+    "shippingAddress": {
+      "fullName": "John Smith",
+      "addressLine1": "456 Oak Ave",
+      "city": "Los Angeles",
+      "state": "CA",
+      "postalCode": "90001",
+      "country": "US",
+      "phone": "+1-555-0202"
+    },
+    "notes": "Please leave at the front door",
+    "paidAt": "2026-02-03T16:45:00Z",
+    "shippedAt": "2026-02-04T11:00:00Z",
+    "items": [
+      {
+        "productId": "00000000-0000-0000-0000-000000000020",
+        "variantId": "00000000-0000-0000-0000-000000000021",
+        "sku": "BEAM-G2-BLK",
+        "quantity": 1,
+        "unitPriceInCents": 44999,
+        "currency": "USD",
+        "productName": "Beam (Gen 2)",
+        "variantName": "Black",
+        "imageUrl": "/images/products/beam-gen2-1.jpg"
+      },
+      {
+        "productId": "00000000-0000-0000-0000-000000000030",
+        "variantId": "00000000-0000-0000-0000-000000000031",
+        "sku": "ROAM2-BLK",
+        "quantity": 2,
+        "unitPriceInCents": 17999,
+        "currency": "USD",
+        "productName": "Roam 2 Charging Set",
+        "variantName": "Shadow Black",
+        "imageUrl": "/images/products/roam-2-1.jpg"
+      }
+    ]
+  },
+  {
+    "orderNumber": "ORD-20260205-E5F6",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "email": "jane@example.com",
+    "status": "CONFIRMED",
+    "shippingAddress": {
+      "fullName": "Jane Doe",
+      "addressLine1": "123 Main St",
+      "addressLine2": "Apt 4B",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "US"
+    },
+    "notes": null,
+    "paidAt": "2026-02-05T20:00:00Z",
+    "items": [
+      {
+        "productId": "00000000-0000-0000-0000-000000000040",
+        "variantId": "00000000-0000-0000-0000-000000000041",
+        "sku": "MOVE2-BLK",
+        "quantity": 1,
+        "unitPriceInCents": 39999,
+        "currency": "USD",
+        "productName": "Move 2",
+        "variantName": "Black",
+        "imageUrl": "/images/products/move-2-1.jpg"
+      }
+    ]
+  },
+  {
+    "orderNumber": "ORD-20260207-G7H8",
+    "userId": "00000000-0000-0000-0000-000000000002",
+    "email": "john@example.com",
+    "status": "PENDING",
+    "shippingAddress": {
+      "fullName": "John Smith",
+      "addressLine1": "456 Oak Ave",
+      "city": "Los Angeles",
+      "state": "CA",
+      "postalCode": "90001",
+      "country": "US"
+    },
+    "notes": "Gift wrap please",
+    "items": [
+      {
+        "productId": "00000000-0000-0000-0000-000000000010",
+        "variantId": "00000000-0000-0000-0000-000000000012",
+        "sku": "NEX-ACE-NVY",
+        "quantity": 1,
+        "unitPriceInCents": 36999,
+        "currency": "USD",
+        "productName": "Nex Ace",
+        "variantName": "Navy Blue",
+        "imageUrl": "/images/products/nex-ace-2.jpg"
+      },
+      {
+        "productId": "00000000-0000-0000-0000-000000000010",
+        "variantId": "00000000-0000-0000-0000-000000000013",
+        "sku": "NEX-ACE-ORG",
+        "quantity": 1,
+        "unitPriceInCents": 36999,
+        "currency": "USD",
+        "productName": "Nex Ace",
+        "variantName": "Sunset Orange",
+        "imageUrl": "/images/products/nex-ace-3.jpg"
+      }
+    ]
+  },
+  {
+    "orderNumber": "ORD-20260204-X9Y0",
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "email": "jane@example.com",
+    "status": "CANCELLED",
+    "shippingAddress": {
+      "fullName": "Jane Doe",
+      "addressLine1": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "US"
+    },
+    "notes": null,
+    "cancelledAt": "2026-02-04T12:00:00Z",
+    "cancellationReason": "Found a better deal elsewhere",
+    "items": [
+      {
+        "productId": "00000000-0000-0000-0000-000000000020",
+        "variantId": "00000000-0000-0000-0000-000000000022",
+        "sku": "BEAM-G2-WHT",
+        "quantity": 1,
+        "unitPriceInCents": 44999,
+        "currency": "USD",
+        "productName": "Beam (Gen 2)",
+        "variantName": "White",
+        "imageUrl": "/images/products/beam-gen2-2.jpg"
+      }
+    ]
+  }
+]
