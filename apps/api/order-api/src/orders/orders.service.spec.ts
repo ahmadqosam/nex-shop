@@ -7,6 +7,7 @@ import { OrdersService } from './orders.service';
 import { PrismaService } from '../prisma';
 import { CacheService } from '../cache';
 import { OrderStatus } from '@prisma/order-api-client';
+import { OrderEventsService } from './order-events.service';
 
 describe('OrdersService', () => {
   let service: OrdersService;
@@ -99,6 +100,10 @@ describe('OrdersService', () => {
       post: jest.fn(),
     };
 
+    const mockOrderEventsService = {
+      publishOrderConfirmed: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrdersService,
@@ -106,6 +111,7 @@ describe('OrdersService', () => {
         { provide: CacheService, useValue: mockCache },
         { provide: ConfigService, useValue: mockConfig },
         { provide: HttpService, useValue: mockHttpService },
+        { provide: OrderEventsService, useValue: mockOrderEventsService },
       ],
     }).compile();
 

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SqsModule } from '@ssut/nestjs-sqs';
+import { SNSClient } from '@aws-sdk/client-sns';
 import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
 import { OrderEventsService } from './order-events.service';
@@ -31,7 +32,25 @@ import { SqsConsumerService } from './sqs-consumer.service';
     }),
   ],
   controllers: [OrdersController],
-  providers: [OrdersService, OrderEventsService, SqsConsumerService],
-  exports: [OrdersService, OrderEventsService],
+  providers: [
+    OrdersService,
+    OrderEventsService,
+    SqsConsumerService,
+    {
+      provide: SNSClient,
+      useFactory: (config: ConfigService) => {
+        return new SNSClient({
+          region: config.get('AWS_REGION', 'us-east-1'),
+          endpoint: config.get('SNS_ENDPOINT', 'http://localhost:4566'),
+          credentials: {
+            accessKeyId: config.get('AWS_ACCESS_KEY_ID', 'test'),
+            secretAccessKey: config.get('AWS_SECRET_ACCESS_KEY', 'test'),
+          },
+        });
+      },
+      inject: [ConfigService],
+    },
+  ],
+  exports: [OrdersService, OrderEventsService, SNSClient],
 })
 export class OrdersModule {}

@@ -4,25 +4,48 @@ import { OrdersService } from './orders.service';
 import { Logger } from '@nestjs/common';
 import { OrderStatus } from '@prisma/order-api-client';
 
+import { ConfigService } from '@nestjs/config';
+import { SNSClient } from '@aws-sdk/client-sns';
+
 describe('OrderEventsService', () => {
   let service: OrderEventsService;
   let ordersService: OrdersService;
+  let snsClient: SNSClient;
 
   beforeEach(async () => {
+    const mockOrdersService = {
+      updateStatus: jest.fn(),
+    };
+
+    const mockSnsClient = {
+      send: jest.fn(),
+    };
+
+    const mockConfigService = {
+      get: jest.fn((key: string, defaultVal: string) => defaultVal),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         OrderEventsService,
         {
           provide: OrdersService,
-          useValue: {
-            updateStatus: jest.fn(),
-          },
+          useValue: mockOrdersService,
+        },
+        {
+           provide: SNSClient,
+           useValue: mockSnsClient,
+        },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
         },
       ],
     }).compile();
 
     service = module.get<OrderEventsService>(OrderEventsService);
     ordersService = module.get<OrdersService>(OrdersService);
+    snsClient = module.get<SNSClient>(SNSClient);
 
     // Mock logger to avoid cluttering test output
     jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
@@ -85,6 +108,42 @@ describe('OrderEventsService', () => {
       expect(ordersService.updateStatus).toHaveBeenCalledWith('ord_123', {
         status: OrderStatus.CONFIRMED,
       });
+      // Verification of publishOrderConfirmed is tricky here since it's called internally by OrdersService, 
+      // which we mocked. In this unit test of OrderEventsService, we Mocked OrdersService. 
+      // So checking if OrdersService.updateStatus was called is enough for handlePaymentSuccess.
+      // The actual publishing logic is in OrdersService calling OrderEventsService.publishOrderConfirmed,
+      // or if we kept the circular dependency logic (OrderEventsService calling OrdersService calling OrderEventsService),
+      // we need to be careful.
+      // 
+      // Wait, in my implementation:
+      // OrderEventsService.handlePaymentSuccess -> OrdersService.updateStatus -> OrderEventsService.publishOrderConfirmed
+      // 
+      // In this test, OrdersService is MOCKED. So updateStatus does NOTHING.
+      // So OrderEventsService.publishOrderConfirmed will NOT be called recursively.
+      // This is correct behavior for unit test isolation.
+    });
+  });
+
+  describe('publishOrderConfirmed', () => {
+    it('should publish SNS event', async () => {
+      const order = {
+        id: 'ord_123',
+        orderNumber: 'ORD-123',
+        userId: 'user_123',
+        email: 'test@example.com',
+        totalInCents: 1000,
+        currency: 'USD',
+        items: [],
+      };
+
+      await service.publishOrderConfirmed(order);
+
+      expect(snsClient.send).toHaveBeenCalled();
+      const callArgs = (snsClient.send as jest.Mock).mock.calls[0][0];
+      expect(JSON.parse(callArgs.input.Message)).toEqual(expect.objectContaining({
+        eventType: 'ORDER_CONFIRMED',
+        orderId: 'ord_123',
+      }));
     });
   });
 });

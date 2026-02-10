@@ -3,6 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
@@ -10,6 +12,7 @@ import { firstValueFrom } from 'rxjs';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma';
 import { CacheService } from '../cache';
+import { OrderEventsService } from './order-events.service';
 import { OrderStatus, Order, OrderItem } from '@prisma/order-api-client';
 import {
   CreateOrderDto,
@@ -61,6 +64,8 @@ export class OrdersService {
     private readonly cache: CacheService,
     private readonly config: ConfigService,
     private readonly httpService: HttpService,
+    @Inject(forwardRef(() => OrderEventsService))
+    private readonly orderEventsService: OrderEventsService,
   ) {
     this.cacheTtl = this.config.get<number>('CACHE_TTL', 300);
     this.cartApiUrl = this.config.get<string>(
@@ -387,6 +392,10 @@ export class OrdersService {
     this.logger.log(
       `Order ${order.orderNumber} status: ${order.status} → ${dto.status}`,
     );
+
+    if (dto.status === OrderStatus.CONFIRMED) {
+      await this.orderEventsService.publishOrderConfirmed(updated);
+    }
 
     return this.mapToDto(updated);
   }
