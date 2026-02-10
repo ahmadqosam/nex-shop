@@ -33,7 +33,8 @@ export class OrderResponseDto {
   @ApiProperty() email!: string;
   @ApiProperty({ enum: OrderStatus }) status!: OrderStatus;
   @ApiProperty({ type: [OrderItemResponseDto] }) items!: OrderItemResponseDto[];
-  @ApiProperty({ type: ShippingAddressResponseDto }) shippingAddress!: ShippingAddressResponseDto;
+  @ApiProperty({ type: ShippingAddressResponseDto })
+  shippingAddress!: ShippingAddressResponseDto;
   @ApiProperty() subtotalInCents!: number;
   @ApiProperty() shippingCostInCents!: number;
   @ApiProperty() totalInCents!: number;

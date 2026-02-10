@@ -120,9 +120,7 @@ export class OrdersService {
   private async fetchCart(cartId: string): Promise<CartResponse> {
     try {
       const { data } = await firstValueFrom(
-        this.httpService.get<CartResponse>(
-          `${this.cartApiUrl}/cart/${cartId}`,
-        ),
+        this.httpService.get<CartResponse>(`${this.cartApiUrl}/cart/${cartId}`),
       );
       return data;
     } catch (error: any) {
@@ -141,16 +139,11 @@ export class OrdersService {
       );
       this.logger.log(`Cart ${cartId} converted`);
     } catch (error: any) {
-      this.logger.warn(
-        `Failed to convert cart ${cartId}: ${error.message}`,
-      );
+      this.logger.warn(`Failed to convert cart ${cartId}: ${error.message}`);
     }
   }
 
-  private async reserveInventory(
-    sku: string,
-    quantity: number,
-  ): Promise<void> {
+  private async reserveInventory(sku: string, quantity: number): Promise<void> {
     try {
       await firstValueFrom(
         this.httpService.post(
@@ -166,10 +159,7 @@ export class OrdersService {
     }
   }
 
-  private async releaseInventory(
-    sku: string,
-    quantity: number,
-  ): Promise<void> {
+  private async releaseInventory(sku: string, quantity: number): Promise<void> {
     try {
       await firstValueFrom(
         this.httpService.post(
@@ -214,9 +204,7 @@ export class OrdersService {
     } else if (dto.items && dto.items.length > 0) {
       orderItems = dto.items;
     } else {
-      throw new BadRequestException(
-        'Either cartId or items must be provided',
-      );
+      throw new BadRequestException('Either cartId or items must be provided');
     }
 
     // Reserve inventory (best-effort)
@@ -275,9 +263,7 @@ export class OrdersService {
     return this.mapToDto(order);
   }
 
-  async findAll(
-    query: GetOrdersQueryDto,
-  ): Promise<PaginatedOrdersResponseDto> {
+  async findAll(query: GetOrdersQueryDto): Promise<PaginatedOrdersResponseDto> {
     const {
       page = 1,
       limit = 10,
@@ -289,8 +275,7 @@ export class OrdersService {
     const skip = (page - 1) * limit;
 
     const cacheKey = `orders:list:${JSON.stringify(query)}`;
-    const cached =
-      await this.cache.get<PaginatedOrdersResponseDto>(cacheKey);
+    const cached = await this.cache.get<PaginatedOrdersResponseDto>(cacheKey);
     if (cached) {
       this.logger.debug(`Cache hit for key: ${cacheKey}`);
       return cached;
@@ -406,10 +391,7 @@ export class OrdersService {
     return this.mapToDto(updated);
   }
 
-  async cancel(
-    id: string,
-    dto: CancelOrderDto,
-  ): Promise<OrderResponseDto> {
+  async cancel(id: string, dto: CancelOrderDto): Promise<OrderResponseDto> {
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: { items: true },

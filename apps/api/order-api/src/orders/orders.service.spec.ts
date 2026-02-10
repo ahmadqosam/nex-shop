@@ -313,7 +313,17 @@ describe('OrdersService', () => {
 
   describe('findAll', () => {
     it('should return cached results', async () => {
-      const cached = { data: [mockOrderWithItems], meta: { page: 1, limit: 10, total: 1, totalPages: 1, hasPrevious: false, hasNext: false } };
+      const cached = {
+        data: [mockOrderWithItems],
+        meta: {
+          page: 1,
+          limit: 10,
+          total: 1,
+          totalPages: 1,
+          hasPrevious: false,
+          hasNext: false,
+        },
+      };
       cache.get.mockResolvedValue(cached);
 
       const result = await service.findAll({});

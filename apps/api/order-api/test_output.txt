@@ -1,0 +1,99 @@
+
+> order-api@0.0.1 test:e2e /Users/amrulhaq/Projects/nex-shop/apps/api/order-api
+> jest --config ./test/jest-e2e.json "test/orders.e2e-spec.ts"
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "order_api_test", schema "public" at "localhost:55004"
+
+🚀  Your database is now in sync with your Prisma schema. Done in 87ms
+┌─────────────────────────────────────────────────────────┐
+│  Update available 6.19.2 -> 7.3.0                       │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+
+FAIL test/orders.e2e-spec.ts (6.276 s)
+  Order API (e2e)
+    Order Flow
+      ✕ POST /orders should create an order from cart (22 ms)
+      ✕ GET /orders/:id should return the order (17 ms)
+      ✕ should update order status to CONFIRMED on payment success event (4 ms)
+
+  ● Order API (e2e) › Order Flow › POST /orders should create an order from cart
+
+    expected 201 "Created", got 400 "Bad Request"
+
+      136 |         .post('/orders')
+      137 |         .send(createOrderDto)
+    > 138 |         .expect(201);
+          |          ^
+      139 |
+      140 |       expect(response.body.id).toBeDefined();
+      141 |       expect(response.body.status).toBe(OrderStatus.PENDING);
+
+      at Object.<anonymous> (orders.e2e-spec.ts:138:10)
+      ----
+      at Test._assertStatus (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:309:14)
+      at ../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:365:13
+      at Test._assertFunction (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:342:13)
+      at Test.assert (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:195:23)
+      at localAssert (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:138:14)
+      at Server.<anonymous> (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:152:11)
+
+  ● Order API (e2e) › Order Flow › GET /orders/:id should return the order
+
+    expected 200 "OK", got 404 "Not Found"
+
+      147 |       const response = await request(app.getHttpServer())
+      148 |         .get(`/orders/${orderId}`)
+    > 149 |         .expect(200);
+          |          ^
+      150 |
+      151 |       expect(response.body.id).toBe(orderId);
+      152 |       expect(response.body.status).toBe(OrderStatus.PENDING);
+
+      at Object.<anonymous> (orders.e2e-spec.ts:149:10)
+      ----
+      at Test._assertStatus (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:309:14)
+      at ../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:365:13
+      at Test._assertFunction (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:342:13)
+      at Test.assert (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:195:23)
+      at localAssert (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:138:14)
+      at Server.<anonymous> (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:152:11)
+
+  ● Order API (e2e) › Order Flow › should update order status to CONFIRMED on payment success event
+
+    expected 200 "OK", got 404 "Not Found"
+
+      168 |       const response = await request(app.getHttpServer())
+      169 |         .get(`/orders/${orderId}`)
+    > 170 |         .expect(200);
+          |          ^
+      171 |
+      172 |       expect(response.body.status).toBe(OrderStatus.CONFIRMED);
+      173 |     });
+
+      at Object.<anonymous> (orders.e2e-spec.ts:170:10)
+      ----
+      at Test._assertStatus (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:309:14)
+      at ../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:365:13
+      at Test._assertFunction (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:342:13)
+      at Test.assert (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:195:23)
+      at localAssert (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:138:14)
+      at Server.<anonymous> (../../../../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:152:11)
+
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 3 total
+Snapshots:   0 total
+Time:        6.467 s, estimated 12 s
+Ran all test suites matching test/orders.e2e-spec.ts.
+ ELIFECYCLE  Command failed with exit code 1.

@@ -191,7 +191,10 @@ describe('CartController', () => {
 
   describe('convertCart', () => {
     it('should call convertCart with cartId', async () => {
-      const convertedCart = { ...mockCartWithItems, status: CartStatus.CONVERTED };
+      const convertedCart = {
+        ...mockCartWithItems,
+        status: CartStatus.CONVERTED,
+      };
       service.convertCart.mockResolvedValue(convertedCart);
 
       const result = await controller.convertCart('cart-123');

@@ -13,6 +13,7 @@ interface AppContextType {
   isCartOpen: boolean;
   isAuthLoading: boolean;
   authError: string | null;
+  accessToken: string | null;
   addToCart: (product: Product, quantity?: number, selectedVariant?: { id: string; name: string; sku: string; price: number }) => Promise<void>;
   removeFromCart: (itemId: string) => Promise<void>;
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
@@ -220,15 +221,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const response = await authService.login({ email, password });
       const token = response.accessToken;
       
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const userId = payload.sub;
+
       setAuthState({
         accessToken: token,
         expiresAt: Date.now() + response.expiresIn * 1000,
       });
-      setUser({ id: email, email, name: email.split('@')[0] });
+      setUser({ id: userId, email, name: email.split('@')[0] });
 
       // Merge cart
       if (sessionId && cartItems.length > 0) {
-        const mergedCart = await cartService.mergeCart(sessionId, email, token); // user ID is email in this simple app?
+        const mergedCart = await cartService.mergeCart(sessionId, userId, token); 
         // Note: Real user ID might be needed if not email.
         // Assuming user.id is correct here. If not, we need to decode token.
         setCartId(mergedCart.id);
@@ -253,15 +257,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const response = await authService.register({ email, password, name });
       const token = response.accessToken;
       
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const userId = payload.sub;
+      
       setAuthState({
         accessToken: token,
         expiresAt: Date.now() + response.expiresIn * 1000,
       });
-      setUser({ id: email, email, name: name || email.split('@')[0] });
+      setUser({ id: userId, email, name: name || email.split('@')[0] });
       
       // Merge cart also for register? Usually just create new or claim guest cart.
       if (sessionId && cartItems.length > 0) {
-        const mergedCart = await cartService.mergeCart(sessionId, email, token);
+        const mergedCart = await cartService.mergeCart(sessionId, userId, token);
         setCartId(mergedCart.id);
         setCartItems(mergedCart.items);
       }
@@ -311,6 +318,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       isCartOpen, 
       isAuthLoading, 
       authError,
+      accessToken: authState.accessToken,
       addToCart, 
       removeFromCart, 
       updateQuantity, 

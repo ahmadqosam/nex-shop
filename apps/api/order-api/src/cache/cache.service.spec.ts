@@ -16,10 +16,7 @@ describe('CacheService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        CacheService,
-        { provide: REDIS_CLIENT, useValue: mockRedis },
-      ],
+      providers: [CacheService, { provide: REDIS_CLIENT, useValue: mockRedis }],
     }).compile();
 
     service = module.get<CacheService>(CacheService);
@@ -46,11 +43,7 @@ describe('CacheService', () => {
   describe('set', () => {
     it('should store JSON value with TTL', async () => {
       await service.set('key', { foo: 'bar' }, 300);
-      expect(mockRedis.setex).toHaveBeenCalledWith(
-        'key',
-        300,
-        '{"foo":"bar"}',
-      );
+      expect(mockRedis.setex).toHaveBeenCalledWith('key', 300, '{"foo":"bar"}');
     });
   });
 

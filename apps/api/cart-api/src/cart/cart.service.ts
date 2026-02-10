@@ -13,7 +13,6 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { AxiosError } from 'axios';
 
-
 type CartWithItems = Cart & { items: CartItem[] };
 
 @Injectable()
@@ -38,10 +37,7 @@ export class CartService {
   /**
    * Check inventory availability
    */
-  private async checkInventory(
-    sku: string,
-    quantity: number,
-  ): Promise<void> {
+  private async checkInventory(sku: string, quantity: number): Promise<void> {
     try {
       const { data } = await firstValueFrom(
         this.httpService.get<{ quantity: number }>(`/inventory/${sku}`),
@@ -253,7 +249,6 @@ export class CartService {
     await this.checkInventory(dto.sku, newQuantity);
 
     if (existingItem) {
-
       // Update quantity
       await this.prisma.cartItem.update({
         where: { id: existingItem.id },

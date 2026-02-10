@@ -4,7 +4,10 @@ import request from 'supertest';
 import { HttpService } from '@nestjs/axios';
 import { of } from 'rxjs';
 
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import {
+  PostgreSqlContainer,
+  StartedPostgreSqlContainer,
+} from '@testcontainers/postgresql';
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
 import { execSync } from 'child_process';
 import { AppModule } from '../src/app.module';
@@ -36,18 +39,22 @@ describe('Cart API (e2e)', () => {
 
     // Run Prisma migrations
     execSync('npx prisma db push --skip-generate', {
-      env: { ...process.env, DATABASE_URL: postgresContainer.getConnectionUri() },
+      env: {
+        ...process.env,
+        DATABASE_URL: postgresContainer.getConnectionUri(),
+      },
       cwd: process.cwd(),
     });
 
     const mockHttpService = {
-      get: () => of({
-        data: { quantity: 100 },
-        status: 200,
-        statusText: 'OK',
-        headers: {},
-        config: {},
-      }),
+      get: () =>
+        of({
+          data: { quantity: 100 },
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {},
+        }),
     };
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -56,7 +63,6 @@ describe('Cart API (e2e)', () => {
       .overrideProvider(HttpService)
       .useValue(mockHttpService)
       .compile();
-
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
@@ -77,10 +83,7 @@ describe('Cart API (e2e)', () => {
 
   describe('Health Check', () => {
     it('/ (GET) should return OK', () => {
-      return request(app.getHttpServer())
-        .get('/')
-        .expect(200)
-        .expect('OK');
+      return request(app.getHttpServer()).get('/').expect(200).expect('OK');
     });
   });
 
@@ -245,9 +248,7 @@ describe('Cart API (e2e)', () => {
 
   describe('Validation', () => {
     it('GET /cart should fail without userId or sessionId', async () => {
-      return request(app.getHttpServer())
-        .get('/cart')
-        .expect(400);
+      return request(app.getHttpServer()).get('/cart').expect(400);
     });
 
     it('POST /cart/:cartId/items should fail with invalid data', async () => {

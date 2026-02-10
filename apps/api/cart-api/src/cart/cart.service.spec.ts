@@ -9,14 +9,11 @@ import { HttpService } from '@nestjs/axios';
 import { of, throwError } from 'rxjs';
 import { AxiosError } from 'axios';
 
-
 describe('CartService', () => {
   let service: CartService;
   let prisma: any;
   let cache: any;
   let httpService: any;
-
-
 
   const mockCart = {
     id: 'cart-123',
@@ -79,7 +76,6 @@ describe('CartService', () => {
       get: jest.fn(),
     };
 
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CartService,
@@ -88,7 +84,6 @@ describe('CartService', () => {
         { provide: ConfigService, useValue: mockConfig },
         { provide: HttpService, useValue: mockHttpService },
       ],
-
     }).compile();
 
     service = module.get<CartService>(CartService);
@@ -96,7 +91,6 @@ describe('CartService', () => {
     cache = module.get(CacheService);
     httpService = module.get(HttpService);
   });
-
 
   describe('getOrCreateCart', () => {
     it('should throw BadRequestException if no userId or sessionId provided', async () => {
@@ -229,7 +223,6 @@ describe('CartService', () => {
       prisma.cartItem.create.mockResolvedValue(mockCartItem);
       httpService.get.mockReturnValue(of({ data: { quantity: 10 } }));
 
-
       await service.addItem('cart-123', addItemDto);
 
       expect(prisma.cartItem.create).toHaveBeenCalled();
@@ -284,7 +277,6 @@ describe('CartService', () => {
 
       await service.updateItemQuantity('cart-123', 'item-123', { quantity: 5 });
 
-
       expect(prisma.cartItem.update).toHaveBeenCalledWith({
         where: { id: 'item-123' },
         data: { quantity: 5 },
@@ -310,9 +302,9 @@ describe('CartService', () => {
     it('should throw NotFoundException if item not found', async () => {
       prisma.cartItem.findFirst.mockResolvedValue(null);
 
-      await expect(
-        service.removeItem('cart-123', 'item-123'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.removeItem('cart-123', 'item-123')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should delete item and invalidate cache', async () => {

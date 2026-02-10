@@ -38,6 +38,21 @@ functions:
           method: ANY
           path: '{proxy+}'
 
+  handlePaymentEvents:
+    handler: dist/lambda-sqs.handler
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt: [OrderPaymentEventsQueue, Arn]
+          batchSize: 10
+
+resources:
+  Resources:
+    OrderPaymentEventsQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: order-payment-events-queue
+
 package:
   individually: true
   patterns:

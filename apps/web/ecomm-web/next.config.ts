@@ -54,6 +54,14 @@ const nextConfig: NextConfig = {
         source: '/api/cart/:path*',
         destination: 'http://localhost:4004/cart/:path*',
       },
+      {
+        source: '/api/orders/:path*',
+        destination: 'http://localhost:4005/orders/:path*',
+      },
+      {
+        source: '/api/payments/:path*',
+        destination: 'http://localhost:4006/payments/:path*',
+      },
     ];
   },
 };

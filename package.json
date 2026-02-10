@@ -9,7 +9,7 @@
   "scripts": {
     "build": "turbo build",
     "clean:ports": "bash scripts/cleanup-ports.sh",
-    "dev": "bash scripts/cleanup-ports.sh && docker compose up -d --wait && turbo dev --filter=!order-api",
+    "dev": "bash scripts/cleanup-ports.sh && docker compose up -d --wait && turbo dev",
     "dev:services": "turbo dev",
     "lint": "turbo lint",
     "test": "turbo test",

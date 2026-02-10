@@ -10,6 +10,8 @@ import OrderSummary from '../../components/checkout/OrderSummary';
 import OrderConfirmation from '../../components/checkout/OrderConfirmation';
 import OrderProcessing from '../../components/checkout/OrderProcessing';
 import { CheckoutState } from '../../types/checkout';
+import { orderService, CreateOrderDto } from '../../services/orderService';
+import { paymentService } from '../../services/paymentService';
 
 const INITIAL_STATE: CheckoutState = {
   firstName: '',
@@ -31,7 +33,8 @@ const INITIAL_STATE: CheckoutState = {
 };
 
 export default function CheckoutPage() {
-  const { cart, user, clearCart } = useAppContext();
+
+  const { cart, user, clearCart, accessToken } = useAppContext();
   const router = useRouter();
   const [formData, setFormData] = useState<CheckoutState>(INITIAL_STATE);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -52,15 +55,68 @@ export default function CheckoutPage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
+    if (!user || !accessToken) {
+      alert('Please login to checkout');
+      return;
+    }
+    
     setIsProcessing(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsProcessing(false);
+    try {
+      // 1. Create Order
+      const orderDto: CreateOrderDto = {
+        userId: user.id || '', 
+        email: formData.email,
+        items: cart.map(item => ({
+          productId: item.productId,
+          variantId: item.variantId,
+          sku: item.sku,
+          quantity: item.quantity,
+          unitPriceInCents: Math.round(item.price * 100),
+          productName: item.productName,
+          variantName: item.variantName,
+          imageUrl: item.image,
+          currency: 'USD'
+        })),
+        shippingAddress: {
+          fullName: `${formData.firstName} ${formData.lastName}`,
+          addressLine1: formData.address,
+          city: formData.city,
+          state: 'NJ', 
+          postalCode: formData.zipCode,
+          country: 'US',
+          phone: formData.phone,
+        },
+      };
+
+      const order = await orderService.createOrder(orderDto, accessToken);
+      console.log('Order created:', order);
+
+      // 2. Create Payment Intent
+      const paymentDto = {
+        amount: order.totalInCents,
+        currency: order.currency.toLowerCase(),
+        metadata: {
+          orderId: order.id,
+        },
+      };
+
+      const payment = await paymentService.createPayment(paymentDto, accessToken);
+      console.log('Payment intent created:', payment);
+
+      // 3. Confirm (Simulation)
+      // In a real app with Stripe.js, we would confirmCardPayment here using payment.clientSecret
+      
       setIsConfirmed(true);
       clearCart();
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 2000);
+
+    } catch (error) {
+      console.error('Checkout failed:', error);
+      alert('Checkout failed. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleCloseConfirmation = () => {
