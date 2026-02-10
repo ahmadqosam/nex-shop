@@ -12,6 +12,10 @@ export class SnsService {
     this.client = new SNSClient({
       endpoint: this.configService.get('SNS_ENDPOINT'),
       region: this.configService.get('AWS_REGION'),
+      credentials: {
+        accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID', 'test'),
+        secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY', 'test'),
+      },
     });
   }
 

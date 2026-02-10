@@ -24,4 +24,13 @@ export class CreatePaymentDto {
   @IsOptional()
   @IsObject()
   metadata?: Record<string, string>;
+
+  @ApiPropertyOptional({
+    description:
+      'Payment method ID to confirm immediately (e.g. pm_card_visa for test)',
+    example: 'pm_card_visa',
+  })
+  @IsOptional()
+  @IsString()
+  paymentMethod?: string;
 }

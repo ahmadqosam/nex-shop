@@ -24,6 +24,7 @@ export class PaymentsService {
       dto.amount,
       dto.currency,
       { ...dto.metadata, userId },
+      dto.paymentMethod,
     );
 
     this.logger.log(

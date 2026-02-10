@@ -97,6 +97,22 @@ describe('StripeService', () => {
       });
       expect(result).toEqual(mockIntent);
     });
+
+    it('should include confirm and payment_method when paymentMethod is provided', async () => {
+      const mockIntent = { id: 'pi_test_789', amount: 3000, currency: 'usd', status: 'succeeded' };
+      mockCreate.mockResolvedValue(mockIntent);
+
+      const result = await service.createPaymentIntent(3000, 'usd', { orderId: 'order-1' }, 'pm_card_visa');
+
+      expect(mockCreate).toHaveBeenCalledWith({
+        amount: 3000,
+        currency: 'usd',
+        metadata: { orderId: 'order-1' },
+        payment_method: 'pm_card_visa',
+        confirm: true,
+      });
+      expect(result).toEqual(mockIntent);
+    });
   });
 
   describe('confirmPaymentIntent', () => {

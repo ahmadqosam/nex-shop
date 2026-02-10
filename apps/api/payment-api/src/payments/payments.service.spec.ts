@@ -66,6 +66,7 @@ describe('PaymentsService', () => {
         2000,
         'usd',
         { userId: 'user-1' },
+        undefined,
       );
       expect(result).toEqual({
         id: 'pi_test_123',
@@ -94,6 +95,7 @@ describe('PaymentsService', () => {
         5000,
         'eur',
         { orderId: 'order-99', userId: 'user-2' },
+        undefined,
       );
     });
 

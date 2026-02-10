@@ -31,12 +31,17 @@ export class StripeService {
     amount: number,
     currency: string,
     metadata?: Record<string, string>,
+    paymentMethod?: string,
   ): Promise<Stripe.PaymentIntent> {
     this.logger.log(`Creating PaymentIntent: ${amount} ${currency}`);
     return this.stripe.paymentIntents.create({
       amount,
       currency,
       metadata,
+      ...(paymentMethod && {
+        payment_method: paymentMethod,
+        confirm: true,
+      }),
     });
   }
 
