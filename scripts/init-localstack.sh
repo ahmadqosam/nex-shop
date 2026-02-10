@@ -21,4 +21,9 @@ awslocal sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:payment-ev
 echo "Creating Order API SNS topics..."
 awslocal sns create-topic --name order-events
 
+# Inventory API Queue & DLQ
+awslocal sqs create-queue --queue-name inventory-order-events-dlq
+awslocal sqs create-queue --queue-name inventory-order-events-queue --attributes '{"RedrivePolicy": "{\"deadLetterTargetArn\":\"arn:aws:sqs:us-east-1:000000000000:inventory-order-events-dlq\",\"maxReceiveCount\":\"3\"}"}'
+awslocal sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:order-events --protocol sqs --notification-endpoint arn:aws:sqs:us-east-1:000000000000:inventory-order-events-queue
+
 echo "LocalStack initialization complete."

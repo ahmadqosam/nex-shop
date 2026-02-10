@@ -20,8 +20,12 @@
     "infra:down": "docker compose down"
   },
   "devDependencies": {
-    "turbo": "^2.5.0",
-    "prettier": "^3.4.2"
+    "prettier": "^3.4.2",
+    "turbo": "^2.5.0"
+  },
+  "dependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.0",
+    "ts-jest": "^29.4.6"
   }
-
 }

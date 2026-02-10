@@ -167,4 +167,44 @@ export class InventoryService {
       },
     });
   }
+
+  async syncOrderItems(items: Array<{ sku: string; quantity: number }>) {
+    for (const item of items) {
+      try {
+        await this.prisma.$transaction(async (tx) => {
+          const inventory = await tx.inventory.findUnique({
+            where: { sku: item.sku },
+          });
+
+          if (!inventory) {
+            this.logger.warn(`Inventory not found for SKU ${item.sku} during sync`);
+            return;
+          }
+
+          // Decrement both quantity (physical) and reserved (committed)
+          await tx.inventory.update({
+            where: { sku: item.sku },
+            data: {
+              quantity: { decrement: item.quantity },
+              reserved: { decrement: item.quantity },
+            },
+          });
+
+          await tx.inventoryAdjustment.create({
+            data: {
+              inventoryId: inventory.id,
+              adjustmentType: 'sale',
+              quantity: -item.quantity,
+              reason: 'Order Confirmed',
+            },
+          });
+        });
+        this.logger.log(`Synced inventory for SKU ${item.sku}`);
+      } catch (error: any) {
+        this.logger.error(
+          `Failed to sync inventory for SKU ${item.sku}: ${error.message}`,
+        );
+      }
+    }
+  }
 }

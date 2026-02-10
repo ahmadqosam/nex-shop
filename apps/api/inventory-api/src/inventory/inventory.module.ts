@@ -4,10 +4,12 @@ import { InventoryController } from './inventory.controller';
 import { PrismaModule } from '../prisma';
 import { CacheModule } from '../cache/cache.module';
 
+import { InventoryConsumer } from './inventory.consumer';
+
 @Module({
   imports: [PrismaModule, CacheModule],
   controllers: [InventoryController],
-  providers: [InventoryService],
+  providers: [InventoryService, InventoryConsumer],
   exports: [InventoryService],
 })
 export class InventoryModule {}

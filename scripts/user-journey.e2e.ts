@@ -16,6 +16,7 @@ const PRODUCT_API = process.env.PRODUCT_API_URL || 'http://localhost:4002';
 const CART_API = process.env.CART_API_URL || 'http://localhost:4004';
 const ORDER_API = process.env.ORDER_API_URL || 'http://localhost:4005';
 const PAYMENT_API = process.env.PAYMENT_API_URL || 'http://localhost:4006';
+const INVENTORY_API = process.env.INVENTORY_API_URL || 'http://localhost:4003';
 
 // Seeded test user
 const TEST_USER = { email: 'john@example.com', password: 'Test@1234' };
@@ -42,6 +43,36 @@ async function request<T>(url: string, opts: RequestInit = {}): Promise<T> {
     throw new Error(`${opts.method ?? 'GET'} ${url} -> ${res.status}: ${body}`);
   }
   return body ? JSON.parse(body) : ({} as T);
+}
+
+async function getInventory(sku: string) {
+  try {
+    return await request<{ sku: string; quantity: number; reserved: number }>(
+      `${INVENTORY_API}/inventory/${sku}`,
+    );
+  } catch (e) {
+    return null;
+  }
+}
+
+async function ensureInventory(sku: string, minQty: number = 10) {
+  let inv = await getInventory(sku);
+  if (!inv) {
+    log('Setup', `Creating inventory for ${sku}...`);
+    await request(`${INVENTORY_API}/inventory`, {
+      method: 'POST',
+      body: JSON.stringify({ sku, quantity: 100, warehouseCode: 'WH-TEST' }),
+    });
+    inv = await getInventory(sku);
+  } else if (inv.quantity < minQty) {
+    log('Setup', `Restocking inventory for ${sku}...`);
+    await request(`${INVENTORY_API}/inventory/${sku}/adjust`, {
+      method: 'POST',
+      body: JSON.stringify({ adjustmentType: 'restock', quantity: 100, reason: 'Test Restock' }),
+    });
+    inv = await getInventory(sku);
+  }
+  return inv!;
 }
 
 // Steps
@@ -203,12 +234,37 @@ async function main() {
 
   const auth = await stepLogin();
   const { product, variant, price } = await stepFetchProduct();
+
+  // Setup Inventory
+  const initialInv = await ensureInventory(variant.sku);
+  log('Info', `Initial Inventory: ${initialInv.quantity} (Reserved: ${initialInv.reserved})`);
+
   await stepAddToCart(auth.userId, product, variant, price);
   const order = await stepCreateOrder(auth.userId, auth.email, product, variant, price);
+  
+  // Verify Reservation
+  const afterOrderInv = await getInventory(variant.sku);
+  log('Info', `Inventory after Order: ${afterOrderInv!.quantity} (Reserved: ${afterOrderInv!.reserved})`);
+  // Expect reserved to increase
+  
   await stepPay(auth.accessToken, order);
   await stepVerifyOrder(order.id);
 
-  console.log('\n=== ALL STEPS PASSED ===');
+  // Verify Final Inventory Sync
+  log('7/7', 'Verifying Inventory Sync...');
+  const maxAttempts = 10;
+  for (let i = 1; i <= maxAttempts; i++) {
+    const finalInv = await getInventory(variant.sku);
+    // Expect: Qty = Initial - 1, Reserved = Initial (reservation cleared)
+    if (finalInv && finalInv.quantity === initialInv.quantity - 1 && finalInv.reserved === initialInv.reserved) {
+       log('7/7', `Inventory Correct! Qty: ${finalInv.quantity}, Reserved: ${finalInv.reserved}`);
+       console.log('\n=== ALL STEPS PASSED ===');
+       return;
+    }
+    await sleep(1000);
+    log('7/7', `Waiting for sync... Current: ${finalInv?.quantity} (Reserved: ${finalInv?.reserved})`);
+  }
+  throw new Error('Inventory sync failed: Stock did not update as expected.');
 }
 
 main().catch((err) => {
