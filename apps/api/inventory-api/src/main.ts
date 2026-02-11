@@ -34,9 +34,9 @@ async function bootstrap() {
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('docs', app, document);
 
-  app.getHttpAdapter().get('/api/docs-json', (_req: any, res: any) => {
+  app.getHttpAdapter().get('/docs-json', (_req: any, res: any) => {
     res.json(document);
   });
 

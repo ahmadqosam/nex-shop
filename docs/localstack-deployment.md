@@ -30,8 +30,8 @@ module.exports = function (options) {
     externals: [
       // Native modules with .node bindings cannot be bundled by webpack.
       // Use 'commonjs <name>' so webpack emits require() instead of a global ref.
-      // ONLY add entries here if the service has native dependencies.
-      // Example: { argon2: 'commonjs argon2' },
+      { "@prisma/client": "commonjs @prisma/client" }, // If using standard Prisma
+      { "@prisma/inventory-client": "commonjs @prisma/inventory-client" }, // If using custom output
 
       // Externalize optional NestJS packages not installed in this project
       function ({ request }, callback) {
@@ -84,22 +84,23 @@ execSync("nest build --webpack", { stdio: "inherit" });
 // In pnpm, a package's deps are co-located as siblings in the .pnpm store.
 // We resolve the real path, go up one level, and copy everything — this
 // gets the native module AND all its transitive dependencies.
-console.log("Copying native dependencies...");
-const nativeModules = ["argon2"]; // Add native modules here
-for (const mod of nativeModules) {
-  const realPath = fs.realpathSync(
-    path.dirname(require.resolve(mod + "/package.json")),
-  );
-  const pnpmNodeModules = path.dirname(realPath);
-  const dest = path.join("dist", "node_modules");
-  fs.mkdirSync(dest, { recursive: true });
-  for (const entry of fs.readdirSync(pnpmNodeModules)) {
-    fs.cpSync(path.join(pnpmNodeModules, entry), path.join(dest, entry), {
-      recursive: true,
-      dereference: true, // Resolves pnpm symlinks to real files
-    });
-  }
+console.log("Copying native dependencies (Prisma)...");
+const prismaClientPath = "@prisma/inventory-client"; // Change to your client
+const realPath = fs.realpathSync(
+  path.dirname(require.resolve(prismaClientPath + "/package.json")),
+);
+const pnpmNodeModules = path.dirname(realPath);
+const dest = path.join("dist", "node_modules");
+fs.mkdirSync(dest, { recursive: true });
+
+// Copy the client and all its sibling engine binaries
+for (const entry of fs.readdirSync(pnpmNodeModules)) {
+  fs.cpSync(path.join(pnpmNodeModules, entry), path.join(dest, entry), {
+    recursive: true,
+    dereference: true,
+  });
 }
+console.log(`Copied ${prismaClientPath} to dist/node_modules`);
 
 console.log("Lambda build complete.");
 ```
@@ -248,17 +249,19 @@ localstack:
 
 ## Gotchas & Troubleshooting
 
-| Issue                                  | Cause                                                 | Fix                                                           |
-| -------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------- |
-| `Cannot find module 'express'`         | pnpm symlinks break in Lambda zip                     | Use webpack bundling (this guide)                             |
-| `argon2 is not defined`                | Bare string in webpack externals generates global ref | Use `{ argon2: 'commonjs argon2' }` syntax                    |
-| `Cannot find module '@phc/format'`     | Native module's transitive deps not copied            | Use pnpm store sibling copy (build-lambda.js)                 |
-| `handler is undefined or not exported` | Webpack not setting `module.exports`                  | Add `libraryTarget: 'commonjs2'` to output                    |
-| `API id does not correspond`           | Stale `.serverless` cache after LocalStack restart    | Deploy script auto-cleans `.serverless/`                      |
-| `ECONNREFUSED 127.0.0.1:5432`          | Lambda container can't reach DB                       | Set `LAMBDA_DOCKER_NETWORK` + use service names               |
-| `.env` overrides Docker hostnames      | Serverless v4 auto-loads `.env` files                 | Explicitly set env vars in deploy script                      |
-| LocalStack returns XML instead of JSON | Raw fetch hits S3 by default                          | Include `apigateway` in Authorization header credential scope |
-| Endpoint returns 502 after deploy      | API Gateway stage not created                         | Deploy script creates stage deployment explicitly             |
+| Issue                                  | Cause                                                 | Fix                                                            |
+| -------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------- |
+| `Cannot find module 'express'`         | pnpm symlinks break in Lambda zip                     | Use webpack bundling (this guide)                              |
+| `argon2 is not defined`                | Bare string in webpack externals generates global ref | Use `{ argon2: 'commonjs argon2' }` syntax                     |
+| `Cannot find module '@phc/format'`     | Native module's transitive deps not copied            | Use pnpm store sibling copy (build-lambda.js)                  |
+| `handler is undefined or not exported` | Webpack not setting `module.exports`                  | Add `libraryTarget: 'commonjs2'` to output                     |
+| `API id does not correspond`           | Stale `.serverless` cache after LocalStack restart    | Deploy script auto-cleans `.serverless/`                       |
+| `ECONNREFUSED 127.0.0.1:5432`          | Lambda container can't reach DB                       | Set `LAMBDA_DOCKER_NETWORK` + use service names                |
+| `.env` overrides Docker hostnames      | Serverless v4 auto-loads `.env` files                 | Explicitly set env vars in deploy script                       |
+| LocalStack returns XML instead of JSON | Raw fetch hits S3 by default                          | Include `apigateway` in Authorization header credential scope  |
+| Endpoint returns 502 after deploy      | API Gateway stage not created                         | Deploy script creates stage deployment explicitly              |
+| `app.router` is undefined              | Nest/Express 4 webpack bundling bug                   | Upgrade to `express@5`                                         |
+| `ECONNREFUSED` inside Lambda           | Using `localhost` for AWS services (SQS/SNS)          | Set `AWS_ENDPOINT: http://localstack:4566` in `serverless.yml` |
 
 ## Key Learnings & Improvements (Post-Implementation)
 
@@ -281,8 +284,8 @@ After updating this, run `pnpm prisma generate` before `pnpm build:lambda`.
 
 When multiple services share the same `restApiId` (e.g., `nex-gw`), they cannot both own the root path `/`. To resolve this:
 
-- **NestJS**: Add `app.setGlobalPrefix('api')` in both `main.ts` and `lambda.ts`.
-- **Serverless**: Prefix your paths in `serverless.yml`:
+- **NestJS**: Avoid double-prefixing. If the gateway path is `api/cart`, and you want your controller at `/api/cart/items`, set the controller as `@Controller('items')` and **Omit `app.setGlobalPrefix('api')`**.
+- **Serverless**: Match your gateway paths exactly:
   ```yaml
   events:
     - http:

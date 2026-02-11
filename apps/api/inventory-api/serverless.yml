@@ -9,8 +9,8 @@ custom:
   localstack:
     stages:
       - local
-    host: http://localhost:4568
-    edgePort: 4568
+    host: http://localhost:4566
+    edgePort: 4566
 
 provider:
   name: aws
@@ -19,13 +19,18 @@ provider:
   stage: ${opt:stage, 'local'}
   memorySize: 512
   timeout: 30
+  apiGateway:
+    restApiId: nex-gw
+    restApiRootResourceId: ${env:API_GW_ROOT_RESOURCE_ID}
   environment:
     NODE_ENV: production
-    DATABASE_URL: ${env:DATABASE_URL, 'postgresql://inventory_api_user:inventory_api_password@host.docker.internal:5434/inventory_api_db'}
-    REDIS_HOST: ${env:REDIS_HOST, 'host.docker.internal'}
-    REDIS_PORT: ${env:REDIS_PORT, '6381'}
+    DATABASE_URL: ${env:DATABASE_URL, 'postgresql://inventory_api_user:inventory_api_password@postgres:5432/inventory_api_db'}
+    REDIS_HOST: ${env:REDIS_HOST, 'redis'}
+    REDIS_PORT: ${env:REDIS_PORT, '6379'}
     REDIS_PASSWORD: ${env:REDIS_PASSWORD, ''}
     CACHE_TTL: ${env:CACHE_TTL, '300'}
+    AWS_ENDPOINT: ${env:AWS_ENDPOINT, 'http://localstack:4566'}
+    INVENTORY_ORDER_EVENTS_QUEUE_URL: ${env:INVENTORY_ORDER_EVENTS_QUEUE_URL, 'http://localstack:4566/000000000000/inventory-order-events-queue'}
 
 functions:
   api:
@@ -33,18 +38,14 @@ functions:
     events:
       - http:
           method: ANY
-          path: /
+          path: api/inventory
       - http:
           method: ANY
-          path: '{proxy+}'
+          path: api/inventory/{proxy+}
 
 package:
   individually: true
   patterns:
-    - '!src/**'
-    - '!test/**'
-    - '!prisma/**'
-    - '!.env*'
+    - '!**'
     - 'dist/**'
-    - 'node_modules/**'
-    - 'node_modules/.prisma/**'
+    - 'dist/node_modules/**'
