@@ -21,32 +21,16 @@ async function bootstrap(): Promise<Handler> {
   const app = await NestFactory.create(AppModule, adapter, {
     logger: ['error', 'warn'],
   });
-  app.setGlobalPrefix('api');
-
-  const configService = app.get(ConfigService);
-
-  app.enableCors({
-    origin: configService.get('CORS_ORIGIN', 'http://localhost:3000'),
-    credentials: true,
-  });
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
-
   const config = new DocumentBuilder()
     .setTitle('Cart Api')
     .setDescription('Cart API service for shopping cart management')
     .setVersion('1.0')
+    .addServer('/local/_user_request_/api/cart', 'LocalStack')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('docs', app, document);
 
-  expressApp.get('/api/docs-json', (_req, res) => {
+  expressApp.get('/docs-json', (_req, res) => {
     res.json(document);
   });
 

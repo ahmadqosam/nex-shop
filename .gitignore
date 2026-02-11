@@ -52,3 +52,6 @@ pnpm-debug.log*
 *.tsbuildinfo
 /apps/api/product-api/.serverless
 *.zip
+apps/api/product-api/.serverless/api.zip
+apps/api/product-api/.serverless/cloudformation-template-update-stack.json
+apps/api/product-api/.serverless/serverless-state.json

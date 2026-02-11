@@ -17,7 +17,8 @@
     "generate": "bash scripts/scaffold-service.sh",
     "seed:images": "bash scripts/download-seed-images.sh",
     "infra:up": "docker compose up -d --wait",
-    "infra:down": "docker compose down"
+    "infra:down": "docker compose down",
+    "deploy:local:all": "node scripts/deploy-all-local.js"
   },
   "devDependencies": {
     "prettier": "^3.4.2",

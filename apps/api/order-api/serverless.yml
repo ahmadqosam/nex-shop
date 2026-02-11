@@ -29,7 +29,7 @@ provider:
     REDIS_PORT: ${env:REDIS_PORT, '6379'}
     REDIS_PASSWORD: ${env:REDIS_PASSWORD, ''}
     CACHE_TTL: ${env:CACHE_TTL, '300'}
-    AWS_ENDPOINT: ${env:AWS_ENDPOINT, 'http://localstack:4566'}
+    AWS_ENDPOINT: http://localstack:4566
     ORDER_EVENTS_TOPIC_ARN: ${env:ORDER_EVENTS_TOPIC_ARN, 'arn:aws:sns:us-east-1:000000000000:order-events'}
 
 functions:
@@ -38,10 +38,10 @@ functions:
     events:
       - http:
           method: ANY
-          path: api/order
+          path: api/orders
       - http:
           method: ANY
-          path: api/order/{proxy+}
+          path: api/orders/{proxy+}
 
   handlePaymentEvents:
     handler: dist/lambda-sqs.handler

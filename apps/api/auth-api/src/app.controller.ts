@@ -8,9 +8,16 @@ import { Public } from './auth/decorators/public.decorator';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
+  @Get('health')
   @Public()
   @ApiOperation({ summary: 'Health check' })
+  getHealth(): string {
+    return 'OK';
+  }
+
+  @Get()
+  @Public()
+  @ApiOperation({ summary: 'Welcome message' })
   getHello(): string {
     return this.appService.getHello();
   }

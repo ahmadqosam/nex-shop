@@ -12,6 +12,14 @@
     "prisma:generate": {
       "cache": false
     },
+    "deploy:local": {
+      "dependsOn": ["^prisma:generate", "build:lambda"],
+      "cache": false
+    },
+    "build:lambda": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
     "dev": {
       "cache": false,
       "persistent": true

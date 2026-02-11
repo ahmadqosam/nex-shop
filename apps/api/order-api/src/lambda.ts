@@ -41,7 +41,7 @@ async function bootstrap(): Promise<Handler> {
     .setTitle('Order Api')
     .setDescription('Order management service')
     .setVersion('1.0')
-    .addServer('/local/_user_request_/api/order', 'LocalStack')
+    .addServer('/local/_user_request_/api/orders', 'LocalStack')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);

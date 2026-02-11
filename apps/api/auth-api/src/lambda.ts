@@ -44,9 +44,14 @@ async function bootstrap(): Promise<Handler> {
     .setDescription('Authentication and authorization service')
     .setVersion('1.0')
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
+    .addServer('/local/_user_request_/api/auth', 'LocalStack')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('docs', app, document);
+
+  expressApp.get('/docs-json', (_req, res) => {
+    res.json(document);
+  });
 
   const httpAdapter = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));

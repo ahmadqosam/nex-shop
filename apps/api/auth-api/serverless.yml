@@ -43,10 +43,10 @@ functions:
     events:
       - http:
           method: ANY
-          path: /
+          path: api/auth
       - http:
           method: ANY
-          path: '{proxy+}'
+          path: api/auth/{proxy+}
 
 package:
   individually: true
