@@ -9,8 +9,8 @@ custom:
   localstack:
     stages:
       - local
-    host: http://localhost:4567
-    edgePort: 4567
+    host: http://localhost:4566
+    edgePort: 4566
 
 provider:
   name: aws
@@ -19,13 +19,17 @@ provider:
   stage: ${opt:stage, 'local'}
   memorySize: 512
   timeout: 30
+  apiGateway:
+    restApiId: nex-gw
+    restApiRootResourceId: ${env:API_GW_ROOT_RESOURCE_ID}
   environment:
     NODE_ENV: production
-    DATABASE_URL: ${env:DATABASE_URL, 'postgresql://product_user:product_password@host.docker.internal:5433/product_db'}
-    REDIS_HOST: ${env:REDIS_HOST, 'host.docker.internal'}
-    REDIS_PORT: ${env:REDIS_PORT, '6381'}
+    DATABASE_URL: ${env:DATABASE_URL, 'postgresql://product_user:product_password@postgres:5432/product_db'}
+    REDIS_HOST: ${env:REDIS_HOST, 'redis'}
+    REDIS_PORT: ${env:REDIS_PORT, '6379'}
     REDIS_PASSWORD: ${env:REDIS_PASSWORD, ''}
     CACHE_TTL: ${env:CACHE_TTL, '300'}
+    AWS_ENDPOINT: http://localstack:4566
 
 functions:
   api:
@@ -33,18 +37,13 @@ functions:
     events:
       - http:
           method: ANY
-          path: /
+          path: api/products
       - http:
           method: ANY
-          path: '{proxy+}'
+          path: api/products/{proxy+}
 
 package:
   individually: true
   patterns:
-    - '!src/**'
-    - '!test/**'
-    - '!prisma/**'
-    - '!.env*'
+    - '!**'
     - 'dist/**'
-    - 'node_modules/**'
-    - 'node_modules/.prisma/**'

@@ -7,6 +7,7 @@ dist
 out
 build
 .serverless
+**/.serverless
 
 # Agent
 .agent
@@ -49,3 +50,5 @@ pnpm-debug.log*
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+/apps/api/product-api/.serverless
+*.zip

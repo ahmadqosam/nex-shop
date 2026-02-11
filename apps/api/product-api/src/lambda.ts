@@ -42,12 +42,13 @@ async function bootstrap(): Promise<Handler> {
     .setDescription('Product catalog API for nex-shop e-commerce')
     .setVersion('1.0')
     .addTag('Products', 'Product catalog operations')
+    .addServer('/local/_user_request_/api/products', 'LocalStack')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('docs', app, document);
 
   // Expose OpenAPI JSON
-  expressApp.get('/api/docs-json', (_req, res) => {
+  expressApp.get('/docs-json', (_req, res) => {
     res.json(document);
   });
 
