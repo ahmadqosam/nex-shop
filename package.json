@@ -21,7 +21,9 @@
     "infra:up:localstack": "STRIPE_WEBHOOK_URL=http://localstack:4566/restapis/nex-gw/local/_user_request_/payment-svc/payments/webhook docker compose up -d --wait",
     "infra:down": "docker compose down",
     "deploy:local:all": "node scripts/deploy-all-local.js",
-    "test:e2e:journey": "TEST_ENV=localstack npx tsx scripts/user-journey.e2e.ts"
+    "test:e2e:journey": "TEST_ENV=localstack npx tsx scripts/user-journey.e2e.ts",
+    "test:load": "k6 run load-tests/user-journey.load-test.js",
+    "test:load:stress": "k6 run --vus 10 --duration 1m load-tests/user-journey.load-test.js"
   },
   "devDependencies": {
     "env-cmd": "^11.0.0",
