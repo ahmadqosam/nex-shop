@@ -312,6 +312,39 @@ curl -s -X POST -H "Content-Type: application/x-www-form-urlencoded" \
   http://localhost:4566
 ```
 
-### 5. Explicit Dependencies
+### 6. Multiple Handlers with Webpack
 
-Webpack bundling requires that all core framework dependencies (like `express`) be explicitly listed in the package's `dependencies`. Do not rely on transitive dependencies from NestJS core.
+When a service has multiple entry points (e.g., an HTTP handler and an SQS handler), update `webpack.config.js` to define both:
+
+```javascript
+entry: {
+  lambda: './src/lambda.ts',
+  'lambda-sqs': './src/lambda-sqs.ts'
+},
+output: {
+  ...options.output,
+  filename: '[name].js', // Generates lambda.js and lambda-sqs.js
+  libraryTarget: 'commonjs2',
+},
+```
+
+### 7. Explicit Dependency on `express`
+
+Webpack bundling requires that all core framework dependencies be explicitly listed in the package's `dependencies`, even if they are transitive dependencies of NestJS. Always run:
+
+```bash
+pnpm add express
+```
+
+Failure to do this often results in `Cannot find module 'express'` during the webpack build.
+
+### 8. Swagger Server Configuration for Shared Gateway
+
+To ensure the "Try it out" feature works in Swagger UI when deployed to a shared gateway stage, explicitly add the server URL in your `lambda.ts`:
+
+```typescript
+const config = new DocumentBuilder()
+  .setTitle("My API")
+  .addServer("/local/_user_request_/api/my-service", "LocalStack")
+  .build();
+```
