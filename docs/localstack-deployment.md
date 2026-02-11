@@ -262,6 +262,8 @@ localstack:
 | Endpoint returns 502 after deploy      | API Gateway stage not created                         | Deploy script creates stage deployment explicitly              |
 | `app.router` is undefined              | Nest/Express 4 webpack bundling bug                   | Upgrade to `express@5`                                         |
 | `ECONNREFUSED` inside Lambda           | Using `localhost` for AWS services (SQS/SNS)          | Set `AWS_ENDPOINT: http://localstack:4566` in `serverless.yml` |
+| `502 Bad Gateway` (Internal Error)     | Missing required environment variables                | Add required vars (RSA keys, secrets) to `deploy-local.js`     |
+| `404 Not Found` (Valid path)           | Path prefix mismatch (Gateway vs NestJS)              | Remove global prefix and adjust controller paths               |
 
 ## Key Learnings & Improvements (Post-Implementation)
 
@@ -348,3 +350,17 @@ const config = new DocumentBuilder()
   .addServer("/local/_user_request_/api/my-service", "LocalStack")
   .build();
 ```
+
+### 9. Required Environment Variables at Startup
+
+If your application performs validation on environment variables at startup (e.g., using `Joi` or `class-validator` in a `ConfigModule`), you **must** ensure these variables are present in the `env` object within `scripts/deploy-local.js`.
+
+Failure to include them will cause the Lambda to crash immediately, resulting in a `502 Bad Gateway` from API Gateway with an "Internal server error" message. Check the LocalStack/Lambda logs to identify missing variables.
+
+### 10. Path Stripping vs Controller Routes
+
+When using a shared gateway with a path like `api/payments/{proxy+}`, API Gateway strips the `api/payments` prefix before passing the request to the Lambda.
+
+- If NestJS has `app.setGlobalPrefix('api')` and `@Controller('payments')`, it expects the path to be `/api/payments/...`.
+- However, it receives `/health` or `/docs`.
+- **Solution**: Remove the global prefix and use `@Controller()` (or a relative path) so it matches the stripped path correctly.

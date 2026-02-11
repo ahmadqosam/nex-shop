@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Headers,
   HttpCode,
   HttpStatus,
@@ -25,7 +26,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 
 @ApiTags('payments')
-@Controller('payments')
+@Controller()
 export class PaymentsController {
   private readonly logger = new Logger(PaymentsController.name);
 
@@ -33,6 +34,14 @@ export class PaymentsController {
     private readonly paymentsService: PaymentsService,
     private readonly stripeService: StripeService,
   ) {}
+
+  @Get('health')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Health check' })
+  async getHealth(): Promise<string> {
+    return 'OK';
+  }
 
   @Post()
   @ApiBearerAuth()

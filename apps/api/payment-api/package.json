@@ -19,8 +19,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "build:lambda": "nest build",
-    "deploy:local": "pnpm build:lambda && serverless deploy --stage local"
+    "build:lambda": "node scripts/build-lambda.js",
+    "deploy:local": "node scripts/deploy-local.js"
   },
   "dependencies": {
     "@aws-sdk/client-sns": "^3.985.0",
@@ -33,6 +33,7 @@
     "@nestjs/swagger": "^11.2.6",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
+    "express": "^5.2.1",
     "joi": "^18.0.2",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

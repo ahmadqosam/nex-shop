@@ -22,32 +22,17 @@ async function bootstrap(): Promise<Handler> {
     logger: ['error', 'warn'],
     rawBody: true,
   });
-
-  const configService = app.get(ConfigService);
-
-  app.enableCors({
-    origin: configService.get('CORS_ORIGIN', 'http://localhost:3000'),
-    credentials: true,
-  });
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
-
   const config = new DocumentBuilder()
     .setTitle('Payment Api')
     .setDescription('Middleware service for payment gateway')
     .setVersion('1.0')
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
+    .addServer('/local/_user_request_/api/payments', 'LocalStack')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('docs', app, document);
 
-  expressApp.get('/api/docs-json', (_req, res) => {
+  expressApp.get('/docs-json', (_req, res) => {
     res.json(document);
   });
 
