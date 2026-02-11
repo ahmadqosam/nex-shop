@@ -36,7 +36,7 @@ async function bootstrap() {
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('api/auth/docs', app, document);
 
   await app.listen(port);
   console.log(`Application is running on: ${await app.getUrl()}`);

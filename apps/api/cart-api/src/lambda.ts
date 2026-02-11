@@ -21,6 +21,7 @@ async function bootstrap(): Promise<Handler> {
   const app = await NestFactory.create(AppModule, adapter, {
     logger: ['error', 'warn'],
   });
+  app.setGlobalPrefix('api');
 
   const configService = app.get(ConfigService);
 

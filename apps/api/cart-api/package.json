@@ -22,8 +22,8 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:seed": "ts-node prisma/seed.ts",
-    "build:lambda": "nest build",
-    "deploy:local": "pnpm build:lambda && serverless deploy --stage local"
+    "build:lambda": "node scripts/build-lambda.js",
+    "deploy:local": "node scripts/deploy-local.js"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -41,6 +41,7 @@
     "axios": "^1.13.5",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
+    "express": "^5.2.1",
     "ioredis": "^5.9.2",
     "joi": "^18.0.2",
     "reflect-metadata": "^0.2.2",

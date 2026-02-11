@@ -9,8 +9,8 @@ custom:
   localstack:
     stages:
       - local
-    host: http://localhost:4569
-    edgePort: 4569
+    host: http://localhost:4566
+    edgePort: 4566
 
 provider:
   name: aws
@@ -19,11 +19,14 @@ provider:
   stage: ${opt:stage, 'local'}
   memorySize: 512
   timeout: 30
+  apiGateway:
+    restApiId: ${env:API_GW_ID, 'nex-gw'}
+    restApiRootResourceId: ${env:API_GW_ROOT_RESOURCE_ID}
   environment:
     NODE_ENV: production
-    DATABASE_URL: ${env:DATABASE_URL, 'postgresql://cart_api_user:cart_api_password@host.docker.internal:5435/cart_api_db'}
-    REDIS_HOST: ${env:REDIS_HOST, 'host.docker.internal'}
-    REDIS_PORT: ${env:REDIS_PORT, '6382'}
+    DATABASE_URL: ${env:DATABASE_URL, 'postgresql://cart_api_user:cart_api_password@postgres:5432/cart_api_db'}
+    REDIS_HOST: ${env:REDIS_HOST, 'redis'}
+    REDIS_PORT: ${env:REDIS_PORT, '6379'}
     REDIS_PASSWORD: ${env:REDIS_PASSWORD, ''}
     CACHE_TTL: ${env:CACHE_TTL, '300'}
 
@@ -33,10 +36,10 @@ functions:
     events:
       - http:
           method: ANY
-          path: /
+          path: api/cart
       - http:
           method: ANY
-          path: '{proxy+}'
+          path: api/cart/{proxy+}
 
   handlePaymentEvents:
     handler: dist/lambda-sqs.handler
@@ -56,10 +59,5 @@ resources:
 package:
   individually: true
   patterns:
-    - '!src/**'
-    - '!test/**'
-    - '!prisma/**'
-    - '!.env*'
+    - '!**'
     - 'dist/**'
-    - 'node_modules/**'
-    - 'node_modules/.prisma/**'
