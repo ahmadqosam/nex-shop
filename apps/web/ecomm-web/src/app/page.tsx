@@ -4,12 +4,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ProductCard } from '../components/ProductCard';
 import { getAllProducts } from '../services/productService';
+import FlashSaleBadge from '../components/FlashSaleBadge';
+import CountdownTimer from '../components/CountdownTimer';
+import { Zap } from 'lucide-react';
 
 export const revalidate = 3600; // ISR: Revalidate every hour
 
 export default async function HomePage() {
   const products = await getAllProducts();
   const featuredProduct = products.length > 0 ? products[0] : null;
+  const flashSaleProduct = products.find(p => !!p.flashSale);
 
   return (
     <div className="overflow-x-hidden">
@@ -194,32 +198,87 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Promo Banner */}
+      {/* Promo Banner / Featured Flash Sale */}
       <section className="py-24 container mx-auto px-4 md:px-8">
-        <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-center mb-16">Special Offers Just for You</h2>
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-center mb-16">
+          {flashSaleProduct ? 'Limited Time Events' : 'Special Offers Just for You'}
+        </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="relative rounded-[40px] overflow-hidden aspect-[4/3] group">
-            <Image src="https://images.unsplash.com/photo-1512446816042-444d641267d4?auto=format&fit=crop&q=80&w=1200" alt="Roam 2" fill className="object-cover group-hover:scale-105 transition-transform duration-1000" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-12 flex flex-col justify-end text-white">
-              <h4 className="text-3xl font-bold mb-2">Roam 2</h4>
-              <p className="text-white/80">Ultra Portable Smart Speaker</p>
-            </div>
-          </div>
+          {flashSaleProduct ? (
+            <>
+              <div className="relative rounded-[40px] overflow-hidden aspect-[4/3] group bg-[#F5F5F7]">
+                <Image 
+                  src={flashSaleProduct.image} 
+                  alt={flashSaleProduct.name} 
+                  fill 
+                  className="object-contain p-20 group-hover:scale-105 transition-transform duration-1000 mix-blend-multiply" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-12 flex flex-col justify-end text-white">
+                  <div className="mb-2">
+                    <FlashSaleBadge />
+                  </div>
+                  <h4 className="text-4xl font-bold mb-2">{flashSaleProduct.name}</h4>
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-2xl font-bold text-red-500">${flashSaleProduct.flashSale!.salePriceInCents / 100}</span>
+                    <span className="text-lg line-through opacity-60">${flashSaleProduct.flashSale!.originalPriceInCents / 100}</span>
+                  </div>
+                </div>
+              </div>
 
-          <div className="bg-[#1A1A1A] rounded-[40px] p-12 flex flex-col items-center justify-center text-center text-white relative overflow-hidden group">
-            <div className="absolute top-10 right-10 bg-white/10 text-xs font-bold px-4 py-2 rounded-full">Black Friday Only!</div>
-            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-red-600/20 blur-[100px] rounded-full" />
-            
-            <h4 className="text-5xl md:text-6xl font-bold tracking-tighter mb-10 leading-none">
-              Black Friday Flash <br /> Sale – 50% Off <br /> Sitewide!
-            </h4>
-            
-            <button className="flex items-center space-x-2 bg-white text-black px-10 py-4 rounded-full font-bold group-hover:scale-105 transition-transform">
-              <span>Check Offers</span>
-              <ArrowRight size={20} />
-            </button>
-          </div>
+              <div className="bg-[#1A1A1A] rounded-[40px] p-12 flex flex-col items-center justify-center text-center text-white relative overflow-hidden group">
+                <div className="absolute top-10 right-10 bg-white/10 text-xs font-bold px-4 py-2 rounded-full flex items-center gap-2">
+                  <span className="w-2 h-2 bg-red-600 rounded-full animate-pulse"></span>
+                  LIVE NOW
+                </div>
+                <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-red-600/20 blur-[100px] rounded-full" />
+                
+                <Zap size={48} className="text-red-600 mb-8" fill="currentColor" />
+                
+                <h4 className="text-5xl md:text-6xl font-bold tracking-tighter mb-6 leading-none">
+                  {flashSaleProduct.flashSale!.saleName}
+                </h4>
+                <p className="text-xl text-white/70 mb-10 max-w-sm">
+                  Exclusive member-only prices. <br />
+                  Ends in <span className="text-white font-bold inline-block min-w-[100px] text-left ml-1">
+                    <CountdownTimer endTime={flashSaleProduct.flashSale!.saleEndTime} mode="compact" />
+                  </span>
+                </p>
+                
+                <Link 
+                  href={`/product/${flashSaleProduct.id}`} 
+                  className="flex items-center space-x-2 bg-white text-black px-10 py-4 rounded-full font-bold hover:scale-105 transition-transform"
+                >
+                  <span>Shop the Sale</span>
+                  <ArrowRight size={20} />
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="relative rounded-[40px] overflow-hidden aspect-[4/3] group">
+                <Image src="https://images.unsplash.com/photo-1512446816042-444d641267d4?auto=format&fit=crop&q=80&w=1200" alt="Roam 2" fill className="object-cover group-hover:scale-105 transition-transform duration-1000" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-12 flex flex-col justify-end text-white">
+                  <h4 className="text-3xl font-bold mb-2">Roam 2</h4>
+                  <p className="text-white/80">Ultra Portable Smart Speaker</p>
+                </div>
+              </div>
+
+              <div className="bg-[#1A1A1A] rounded-[40px] p-12 flex flex-col items-center justify-center text-center text-white relative overflow-hidden group">
+                <div className="absolute top-10 right-10 bg-white/10 text-xs font-bold px-4 py-2 rounded-full">Black Friday Only!</div>
+                <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-red-600/20 blur-[100px] rounded-full" />
+                
+                <h4 className="text-5xl md:text-6xl font-bold tracking-tighter mb-10 leading-none">
+                  Black Friday Flash <br /> Sale – 50% Off <br /> Sitewide!
+                </h4>
+                
+                <Link href="/products" className="flex items-center space-x-2 bg-white text-black px-10 py-4 rounded-full font-bold hover:scale-105 transition-transform">
+                  <span>Check Offers</span>
+                  <ArrowRight size={20} />
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </section>
 

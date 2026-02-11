@@ -57,10 +57,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     
     const variant = product.variants?.find(v => v.attributes.color === selectedColor);
     
-    addToCart({
-      ...product,
-      stock: product.stock || 0,
-    }, quantity, variant);
+    addToCart(product, quantity, variant);
 
     toggleCart();
 
@@ -83,7 +80,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     try {
       const result = await purchaseFlashSaleItem(product.flashSale.flashSaleItemId, accessToken);
       setPurchaseStatus('success');
-      // Redirect to confirmation or show success
+      // Redirect to confirmation
       router.push(`/checkout/confirmation?orderId=${result.purchaseId}`);
     } catch (error) {
       setPurchaseStatus('error');
@@ -217,25 +214,27 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             {/* Filters / Selectors */}
             <div className="space-y-8 border-t border-secondary/10 pt-10 mb-10">
               {/* Color Selector */}
-              <div>
-                <span className="block text-xs font-bold uppercase tracking-widest text-secondary mb-4">Select Finish</span>
-                <div className="flex space-x-4">
-                  {product.colors?.map(color => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={`w-12 h-12 rounded-full border-2 transition-all flex items-center justify-center ${
-                        selectedColor === color ? 'border-primary scale-110' : 'border-transparent hover:scale-110'
-                      }`}
-                    >
-                      <div 
-                        className="w-10 h-10 rounded-full border border-black/5" 
-                        style={{ backgroundColor: color }}
-                      />
-                    </button>
-                  ))}
+              {product.colors && product.colors.length > 0 && (
+                <div>
+                  <span className="block text-xs font-bold uppercase tracking-widest text-secondary mb-4">Select Finish</span>
+                  <div className="flex space-x-4">
+                    {product.colors.map(color => (
+                      <button
+                        key={color}
+                        onClick={() => setSelectedColor(color)}
+                        className={`w-12 h-12 rounded-full border-2 transition-all flex items-center justify-center ${
+                          selectedColor === color ? 'border-primary scale-110' : 'border-transparent hover:scale-110'
+                        }`}
+                      >
+                        <div 
+                          className="w-10 h-10 rounded-full border border-black/5" 
+                          style={{ backgroundColor: color }}
+                        />
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Quantity */}
               {!isFlashSale && (
@@ -340,12 +339,12 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                <h3 className="text-2xl font-bold mb-8">Technical Specifications</h3>
                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
                  {Object.entries(product.specs).map(([key, value]) => (
-                   <div key={key} className="flex justify-between border-b border-light-gray pb-2">
+                   <div key={key} className="flex justify-between border-b border-secondary/10 pb-2">
                      <span className="text-secondary font-medium capitalize">{key.replace('_', ' ')}</span>
                      <span className="font-bold">{value}</span>
                    </div>
                  ))}
-                 <div className="flex justify-between border-b border-light-gray pb-2">
+                 <div className="flex justify-between border-b border-secondary/10 pb-2">
                     <span className="text-secondary font-medium capitalize">In the box</span>
                     <span className="font-bold">Manual, Cable, Warranty</span>
                  </div>

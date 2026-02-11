@@ -4,10 +4,7 @@ import React, { useState } from 'react';
 import { ProductCard } from '../../components/ProductCard';
 import { Product } from '../../types';
 import { CATEGORIES } from '../../constants';
-// Lucide imports removed as they weren't used in the original file view, 
-// strictly copying logic. If they were used, I'd include them.
-// Checking original file view... it used Loader2 and AlertCircle.
-
+import { Zap } from 'lucide-react';
 
 interface ProductListClientProps {
   initialProducts: Product[];
@@ -15,52 +12,64 @@ interface ProductListClientProps {
 
 export default function ProductListClient({ initialProducts }: ProductListClientProps) {
   const [activeCategory, setActiveCategory] = useState('All');
-  // We don't need loading state for initial load anymore as it comes from server,
-  // but if we were re-fetching on category change we might. 
-  // For now, the original logic filtered client-side or re-fetched.
-  // The original logic fetched *all* products and then filtered locally or via API?
-  // Let's look at the original file content again.
-  // It fetched all products on mount. 
-  // "const filteredProducts = activeCategory === 'All' ? products : products.filter(...)"
-  // So we can just use initialProducts and filter client-side for now.
-  
+  const [flashSaleOnly, setFlashSaleOnly] = useState(false);
   const [products] = useState<Product[]>(initialProducts);
   
-  const filteredProducts = activeCategory === 'All' 
-    ? products 
-    : products.filter(product => product.category === activeCategory);
+  const filteredProducts = products.filter(product => {
+    const categoryMatch = activeCategory === 'All' || product.category === activeCategory;
+    const flashSaleMatch = !flashSaleOnly || !!product.flashSale;
+    return categoryMatch && flashSaleMatch;
+  });
 
   return (
     <div className="container mx-auto px-4 py-12 md:px-8">
       <h1 className="text-5xl font-bold mb-12 tracking-tighter">All Products</h1>
 
-      {/* Category Filter */}
-      <div className="flex flex-wrap gap-4 mb-12">
+      {/* Category Filter & Flash Sale Toggle */}
+      <div className="flex flex-wrap items-center gap-4 mb-12">
+        <div className="flex flex-wrap gap-2">
+          {CATEGORIES.map(category => (
+            <button
+              key={category}
+              onClick={() => setActiveCategory(category)}
+              className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
+                activeCategory === category
+                  ? 'bg-black text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
 
-        {CATEGORIES.map(category => (
-          <button
-            key={category}
-            onClick={() => setActiveCategory(category)}
-            className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
-              activeCategory === category
-                ? 'bg-black text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            {category}
-          </button>
-        ))}
+        <div className="h-8 w-px bg-gray-200 mx-2 hidden md:block"></div>
+
+        <button
+          onClick={() => setFlashSaleOnly(!flashSaleOnly)}
+          className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-bold transition-all border-2 ${
+            flashSaleOnly
+              ? 'bg-red-600 text-white border-red-600 shadow-md transform scale-105'
+              : 'bg-white text-red-600 border-red-600 hover:bg-red-50'
+          }`}
+        >
+          <Zap size={16} fill={flashSaleOnly ? "white" : "red"} />
+          <span>Flash Sale</span>
+        </button>
       </div>
 
       {/* Product Grid */}
       {filteredProducts.length === 0 ? (
         <div className="text-center py-20 bg-gray-50 rounded-3xl">
-          <p className="text-gray-500 text-xl">No products found in this category.</p>
+          <p className="text-gray-500 text-xl">No products found for the selected filters.</p>
           <button 
-             onClick={() => setActiveCategory('All')} 
+             onClick={() => {
+               setActiveCategory('All');
+               setFlashSaleOnly(false);
+             }} 
              className="mt-4 text-black font-bold hover:underline"
           >
-            Clear filters
+            Clear all filters
           </button>
         </div>
       ) : (

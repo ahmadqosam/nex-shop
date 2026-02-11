@@ -142,17 +142,21 @@ export async function getProductById(id: string): Promise<Product | null> {
     try {
       const saleItem = await getFlashSaleForProduct(id);
       if (saleItem) {
+        // To get the endTime and saleName, we need to fetch active sales
+        const activeSales = await getActiveFlashSales();
+        const parentSale = activeSales.find(sale => 
+          sale.items.some(item => item.id === saleItem.id)
+        );
+
         product.flashSale = {
           flashSaleItemId: saleItem.id,
           salePriceInCents: saleItem.salePriceInCents,
           originalPriceInCents: saleItem.originalPriceInCents,
           remainingQuantity: saleItem.remainingQuantity,
           maxQuantity: saleItem.maxQuantity,
-          saleEndTime: 'unknown', // Need to check if we can get this from backend or if we need to fetch active sales for details
-          saleName: 'Flash Sale',   // Placeholder if not in item DTO
+          saleEndTime: parentSale?.endTime || 'unknown',
+          saleName: parentSale?.name || 'Flash Sale',
         };
-        // If we need the end time and name, we'd need to fetch active sales or update backend item DTO
-        // For now, mirroring implementation plan's enrichment logic
       }
     } catch (error) {
       console.error(`Failed to fetch flash sale for product ${id}, skipping enrichment:`, error);

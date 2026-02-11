@@ -10,6 +10,8 @@ export interface Product {
   isNew?: boolean;
   isBestSeller?: boolean;
   colors?: string[];
+  stock?: number;
+  variants?: ProductVariant[];
   flashSale?: {
     flashSaleItemId: string;
     salePriceInCents: number;
@@ -29,6 +31,16 @@ export interface User {
   id: string;
   email: string;
   name: string;
+}
+
+export interface ProductVariant {
+  id: string;
+  sku: string;
+  name: string;
+  price: number;
+  stock: number;
+  image?: string;
+  attributes: Record<string, string>;
 }
 
 export interface AppState {
