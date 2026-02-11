@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -8,6 +9,7 @@ import { PrismaModule } from './prisma';
 import { CacheModule } from './cache';
 import { ProductsModule } from './products';
 import { configValidationSchema } from './config';
+import { AuthModule, JwtAuthGuard } from './auth';
 
 @Module({
   imports: [
@@ -24,8 +26,15 @@ import { configValidationSchema } from './config';
     PrismaModule,
     CacheModule,
     ProductsModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

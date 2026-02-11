@@ -6,6 +6,7 @@ export const configValidationSchema = Joi.object({
     .default('development'),
   PORT: Joi.number().default(4002),
   DATABASE_URL: Joi.string().required(),
+  RSA_PUBLIC_KEY: Joi.string().required(),
   REDIS_HOST: Joi.string().default('localhost'),
   REDIS_PORT: Joi.number().default(6380),
   REDIS_PASSWORD: Joi.string().allow('').default(''),

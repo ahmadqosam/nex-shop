@@ -7,6 +7,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
+import { Public } from '../auth';
 import {
   GetProductsQueryDto,
   ProductResponseDto,
@@ -14,6 +15,7 @@ import {
 } from './dto';
 
 @ApiTags('Products')
+@Public()
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
