@@ -1,10 +1,13 @@
 module.exports = function (options) {
   return {
     ...options,
-    entry: { lambda: "./src/lambda.ts" },
+    entry: {
+      lambda: "./src/lambda.ts",
+      "lambda-sqs": "./src/lambda-sqs.ts",
+    },
     output: {
       ...options.output,
-      filename: "lambda.js",
+      filename: "[name].js",
       libraryTarget: "commonjs2",
     },
     externals: [

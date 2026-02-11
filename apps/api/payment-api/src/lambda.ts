@@ -27,7 +27,7 @@ async function bootstrap(): Promise<Handler> {
     .setDescription('Middleware service for payment gateway')
     .setVersion('1.0')
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
-    .addServer('/local/_user_request_/api/payments', 'LocalStack')
+    .addServer('/local/_user_request_/payment-svc', 'LocalStack')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);

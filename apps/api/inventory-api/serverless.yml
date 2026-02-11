@@ -38,10 +38,25 @@ functions:
     events:
       - http:
           method: ANY
-          path: api/inventory
+          path: inventory-svc
       - http:
           method: ANY
-          path: api/inventory/{proxy+}
+          path: inventory-svc/{proxy+}
+
+  handleOrderEvents:
+    handler: dist/lambda-sqs.handler
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt: [InventoryOrderEventsQueue, Arn]
+          batchSize: 10
+
+resources:
+  Resources:
+    InventoryOrderEventsQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: inventory-order-events-queue
 
 package:
   individually: true

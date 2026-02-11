@@ -37,10 +37,10 @@ functions:
     events:
       - http:
           method: ANY
-          path: api/products
+          path: product-svc
       - http:
           method: ANY
-          path: api/products/{proxy+}
+          path: product-svc/{proxy+}
 
 package:
   individually: true

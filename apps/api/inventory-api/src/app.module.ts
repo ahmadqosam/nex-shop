@@ -22,6 +22,9 @@ import { configValidationSchema } from './config';
     SqsModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
+        const isDev = configService.get('NODE_ENV') === 'development';
+        if (!isDev) return { consumers: [], producers: [] };
+
         const queueUrl = configService.get<string>(
           'INVENTORY_ORDER_EVENTS_QUEUE_URL',
           'http://localhost:4566/000000000000/inventory-order-events-queue',

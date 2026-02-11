@@ -47,10 +47,10 @@ functions:
     events:
       - http:
           method: ANY
-          path: api/payments
+          path: payment-svc
       - http:
           method: ANY
-          path: api/payments/{proxy+}
+          path: payment-svc/{proxy+}
 
 package:
   individually: true

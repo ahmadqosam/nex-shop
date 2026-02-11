@@ -42,7 +42,7 @@ async function bootstrap(): Promise<Handler> {
     .setDescription('Product catalog API for nex-shop e-commerce')
     .setVersion('1.0')
     .addTag('Products', 'Product catalog operations')
-    .addServer('/local/_user_request_/api/products', 'LocalStack')
+    .addServer('/local/_user_request_/product-svc', 'LocalStack')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);

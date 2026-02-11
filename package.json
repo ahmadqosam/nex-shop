@@ -17,8 +17,10 @@
     "generate": "bash scripts/scaffold-service.sh",
     "seed:images": "bash scripts/download-seed-images.sh",
     "infra:up": "docker compose up -d --wait",
+    "infra:up:localstack": "STRIPE_WEBHOOK_URL=http://localstack:4566/restapis/nex-gw/local/_user_request_/payment-svc/payments/webhook docker compose up -d --wait",
     "infra:down": "docker compose down",
-    "deploy:local:all": "node scripts/deploy-all-local.js"
+    "deploy:local:all": "node scripts/deploy-all-local.js",
+    "test:e2e:journey": "TEST_ENV=localstack npx tsx scripts/user-journey.e2e.ts"
   },
   "devDependencies": {
     "prettier": "^3.4.2",

@@ -17,18 +17,26 @@ interface PaymentEvent {
 @Injectable()
 export class OrderEventsService {
   private readonly logger = new Logger(OrderEventsService.name);
+  private readonly snsClient: SNSClient;
   private readonly topicArn: string;
 
   constructor(
     @Inject(forwardRef(() => OrdersService))
     private readonly ordersService: OrdersService,
-    private readonly snsClient: SNSClient,
     private readonly config: ConfigService,
   ) {
     this.topicArn = this.config.get<string>(
       'ORDER_EVENTS_TOPIC_ARN',
       'arn:aws:sns:us-east-1:000000000000:order-events',
     );
+    this.snsClient = new SNSClient({
+      endpoint: this.config.get('SNS_ENDPOINT', 'http://localhost:4566'),
+      region: this.config.get('AWS_REGION', 'us-east-1'),
+      credentials: {
+        accessKeyId: this.config.get('AWS_ACCESS_KEY_ID', 'test'),
+        secretAccessKey: this.config.get('AWS_SECRET_ACCESS_KEY', 'test'),
+      },
+    });
   }
 
   async handlePaymentSuccess(event: PaymentEvent): Promise<void> {

@@ -5,20 +5,15 @@ import { Logger } from '@nestjs/common';
 import { OrderStatus } from '@prisma/order-api-client';
 
 import { ConfigService } from '@nestjs/config';
-import { SNSClient } from '@aws-sdk/client-sns';
 
 describe('OrderEventsService', () => {
   let service: OrderEventsService;
   let ordersService: OrdersService;
-  let snsClient: SNSClient;
+  let mockSend: jest.Mock;
 
   beforeEach(async () => {
     const mockOrdersService = {
       updateStatus: jest.fn(),
-    };
-
-    const mockSnsClient = {
-      send: jest.fn(),
     };
 
     const mockConfigService = {
@@ -33,10 +28,6 @@ describe('OrderEventsService', () => {
           useValue: mockOrdersService,
         },
         {
-           provide: SNSClient,
-           useValue: mockSnsClient,
-        },
-        {
           provide: ConfigService,
           useValue: mockConfigService,
         },
@@ -45,7 +36,10 @@ describe('OrderEventsService', () => {
 
     service = module.get<OrderEventsService>(OrderEventsService);
     ordersService = module.get<OrdersService>(OrdersService);
-    snsClient = module.get<SNSClient>(SNSClient);
+
+    // Spy on the internally created SNSClient
+    mockSend = jest.fn();
+    (service as any).snsClient = { send: mockSend };
 
     // Mock logger to avoid cluttering test output
     jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
@@ -138,8 +132,8 @@ describe('OrderEventsService', () => {
 
       await service.publishOrderConfirmed(order);
 
-      expect(snsClient.send).toHaveBeenCalled();
-      const callArgs = (snsClient.send as jest.Mock).mock.calls[0][0];
+      expect(mockSend).toHaveBeenCalled();
+      const callArgs = mockSend.mock.calls[0][0];
       expect(JSON.parse(callArgs.input.Message)).toEqual(expect.objectContaining({
         eventType: 'ORDER_CONFIRMED',
         orderId: 'ord_123',

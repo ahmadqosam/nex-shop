@@ -20,6 +20,26 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
+    "product-api#deploy:local": {
+      "dependsOn": ["auth-api#deploy:local"],
+      "cache": false
+    },
+    "inventory-api#deploy:local": {
+      "dependsOn": ["product-api#deploy:local"],
+      "cache": false
+    },
+    "cart-api#deploy:local": {
+      "dependsOn": ["inventory-api#deploy:local"],
+      "cache": false
+    },
+    "order-api#deploy:local": {
+      "dependsOn": ["cart-api#deploy:local"],
+      "cache": false
+    },
+    "payment-api#deploy:local": {
+      "dependsOn": ["order-api#deploy:local"],
+      "cache": false
+    },
     "dev": {
       "cache": false,
       "persistent": true

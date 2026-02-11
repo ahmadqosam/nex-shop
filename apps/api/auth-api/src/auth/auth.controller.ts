@@ -25,7 +25,7 @@ import { AuthResponseDto } from './dto/auth-response.dto';
 import { Public } from './decorators/public.decorator';
 
 @ApiTags('auth')
-@Controller()
+@Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
   private readonly refreshTokenTtl: number;

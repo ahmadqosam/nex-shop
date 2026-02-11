@@ -43,10 +43,10 @@ functions:
     events:
       - http:
           method: ANY
-          path: api/auth
+          path: auth-svc
       - http:
           method: ANY
-          path: api/auth/{proxy+}
+          path: auth-svc/{proxy+}
 
 package:
   individually: true

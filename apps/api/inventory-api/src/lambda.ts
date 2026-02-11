@@ -41,7 +41,7 @@ async function bootstrap(): Promise<Handler> {
     .setTitle('Inventory Api')
     .setDescription('Inventory management service for stock levels, reservations, and adjustments')
     .setVersion('1.0')
-    .addServer('/local/_user_request_/api/inventory', 'LocalStack')
+    .addServer('/local/_user_request_/inventory-svc', 'LocalStack')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);

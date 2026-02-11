@@ -19,7 +19,7 @@ import {
 } from './dto';
 
 @ApiTags('Orders')
-@Controller()
+@Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 

@@ -20,7 +20,7 @@ import { CartService } from './cart.service';
 import { AddItemDto, UpdateQuantityDto } from './dto';
 
 @ApiTags('cart')
-@Controller()
+@Controller('cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 

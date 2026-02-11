@@ -25,7 +25,7 @@ async function bootstrap(): Promise<Handler> {
     .setTitle('Cart Api')
     .setDescription('Cart API service for shopping cart management')
     .setVersion('1.0')
-    .addServer('/local/_user_request_/api/cart', 'LocalStack')
+    .addServer('/local/_user_request_/cart-svc', 'LocalStack')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);

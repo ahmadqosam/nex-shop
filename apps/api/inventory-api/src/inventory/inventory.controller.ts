@@ -17,7 +17,7 @@ import { AdjustInventoryDto } from './dto/adjust-inventory.dto';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('inventory')
-@Controller()
+@Controller('inventory')
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 

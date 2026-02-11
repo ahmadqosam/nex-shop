@@ -44,7 +44,7 @@ async function bootstrap(): Promise<Handler> {
     .setDescription('Authentication and authorization service')
     .setVersion('1.0')
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
-    .addServer('/local/_user_request_/api/auth', 'LocalStack')
+    .addServer('/local/_user_request_/auth-svc', 'LocalStack')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);

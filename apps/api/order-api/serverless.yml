@@ -30,7 +30,10 @@ provider:
     REDIS_PASSWORD: ${env:REDIS_PASSWORD, ''}
     CACHE_TTL: ${env:CACHE_TTL, '300'}
     AWS_ENDPOINT: http://localstack:4566
+    SNS_ENDPOINT: ${env:SNS_ENDPOINT, 'http://localstack:4566'}
     ORDER_EVENTS_TOPIC_ARN: ${env:ORDER_EVENTS_TOPIC_ARN, 'arn:aws:sns:us-east-1:000000000000:order-events'}
+    CART_API_URL: http://localstack:4566/restapis/nex-gw/local/_user_request_/cart-svc
+    INVENTORY_API_URL: http://localstack:4566/restapis/nex-gw/local/_user_request_/inventory-svc
 
 functions:
   api:
@@ -38,10 +41,10 @@ functions:
     events:
       - http:
           method: ANY
-          path: api/orders
+          path: order-svc
       - http:
           method: ANY
-          path: api/orders/{proxy+}
+          path: order-svc/{proxy+}
 
   handlePaymentEvents:
     handler: dist/lambda-sqs.handler

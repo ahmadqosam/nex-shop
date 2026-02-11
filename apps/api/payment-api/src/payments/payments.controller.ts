@@ -26,7 +26,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 
 @ApiTags('payments')
-@Controller()
+@Controller('payments')
 export class PaymentsController {
   private readonly logger = new Logger(PaymentsController.name);
 

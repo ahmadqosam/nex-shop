@@ -52,7 +52,7 @@ services:
       [
         'sh',
         '-c',
-        'sleep 3 && curl -s -X POST http://localstripe:8420/_config/webhooks/payment_webhook -d url=http://host.docker.internal:4006/payments/webhook -d secret=whsec_test_secret',
+        'sleep 3 && curl -s -X POST http://localstripe:8420/_config/webhooks/payment_webhook -d url=${STRIPE_WEBHOOK_URL:-http://host.docker.internal:4006/payments/webhook} -d secret=whsec_test_secret',
       ]
 
 volumes:

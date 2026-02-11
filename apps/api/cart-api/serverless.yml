@@ -30,6 +30,7 @@ provider:
     REDIS_PASSWORD: ${env:REDIS_PASSWORD, ''}
     CACHE_TTL: ${env:CACHE_TTL, '300'}
     AWS_ENDPOINT: http://localstack:4566
+    INVENTORY_API_URL: http://localstack:4566/restapis/nex-gw/local/_user_request_/inventory-svc
 
 functions:
   api:
@@ -37,10 +38,10 @@ functions:
     events:
       - http:
           method: ANY
-          path: api/cart
+          path: cart-svc
       - http:
           method: ANY
-          path: api/cart/{proxy+}
+          path: cart-svc/{proxy+}
 
   handlePaymentEvents:
     handler: dist/lambda-sqs.handler

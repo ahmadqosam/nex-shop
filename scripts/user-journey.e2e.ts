@@ -10,13 +10,38 @@
  * Run: npx tsx scripts/user-journey.e2e.ts
  */
 
-// Configuration
-const AUTH_API = process.env.AUTH_API_URL || 'http://localhost:4001';
-const PRODUCT_API = process.env.PRODUCT_API_URL || 'http://localhost:4002';
-const CART_API = process.env.CART_API_URL || 'http://localhost:4004';
-const ORDER_API = process.env.ORDER_API_URL || 'http://localhost:4005';
-const PAYMENT_API = process.env.PAYMENT_API_URL || 'http://localhost:4006';
-const INVENTORY_API = process.env.INVENTORY_API_URL || 'http://localhost:4003';
+// Environment Configuration
+const TEST_ENV = process.env.TEST_ENV || 'dev';
+const LOCALSTACK_BASE = 'http://localhost:4566/restapis/nex-gw/local/_user_request_';
+
+const CONFIGS = {
+  dev: {
+    auth: 'http://localhost:4001',
+    product: 'http://localhost:4002',
+    inventory: 'http://localhost:4003',
+    cart: 'http://localhost:4004',
+    order: 'http://localhost:4005',
+    payment: 'http://localhost:4006',
+  },
+  localstack: {
+    auth: `${LOCALSTACK_BASE}/auth-svc`,
+    product: `${LOCALSTACK_BASE}/product-svc`,
+    inventory: `${LOCALSTACK_BASE}/inventory-svc`,
+    cart: `${LOCALSTACK_BASE}/cart-svc`,
+    order: `${LOCALSTACK_BASE}/order-svc`,
+    payment: `${LOCALSTACK_BASE}/payment-svc`,
+  },
+};
+
+const activeConfig = TEST_ENV === 'localstack' ? CONFIGS.localstack : CONFIGS.dev;
+
+const AUTH_API = process.env.AUTH_API_URL || activeConfig.auth;
+const PRODUCT_API = process.env.PRODUCT_API_URL || activeConfig.product;
+const CART_API = process.env.CART_API_URL || activeConfig.cart;
+const ORDER_API = process.env.ORDER_API_URL || activeConfig.order;
+const PAYMENT_API = process.env.PAYMENT_API_URL || activeConfig.payment;
+const INVENTORY_API = process.env.INVENTORY_API_URL || activeConfig.inventory;
+
 
 // Seeded test user
 const TEST_USER = { email: 'john@example.com', password: 'Test@1234' };
@@ -98,7 +123,7 @@ async function stepFetchProduct() {
       currency: string;
       variants: { id: string; sku: string; name: string; priceInCents: number | null }[];
     }[];
-  }>(`${PRODUCT_API}/products?limit=1`);
+  }>(`${PRODUCT_API}/products/list?limit=1`);
 
   const product = data.data[0];
   if (!product) throw new Error('No products found in catalog');
@@ -230,7 +255,7 @@ async function stepVerifyOrder(orderId: string) {
 
 // Main
 async function main() {
-  console.log('=== E2E User Journey Test ===\n');
+  console.log(`=== E2E User Journey Test (${TEST_ENV.toUpperCase()}) ===\n`);
 
   const auth = await stepLogin();
   const { product, variant, price } = await stepFetchProduct();
@@ -252,7 +277,7 @@ async function main() {
 
   // Verify Final Inventory Sync
   log('7/7', 'Verifying Inventory Sync...');
-  const maxAttempts = 10;
+  const maxAttempts = 15;
   for (let i = 1; i <= maxAttempts; i++) {
     const finalInv = await getInventory(variant.sku);
     // Expect: Qty = Initial - 1, Reserved = Initial (reservation cleared)
@@ -261,7 +286,7 @@ async function main() {
        console.log('\n=== ALL STEPS PASSED ===');
        return;
     }
-    await sleep(1000);
+    await sleep(2000);
     log('7/7', `Waiting for sync... Current: ${finalInv?.quantity} (Reserved: ${finalInv?.reserved})`);
   }
   throw new Error('Inventory sync failed: Stock did not update as expected.');
