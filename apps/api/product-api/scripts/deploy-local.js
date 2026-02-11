@@ -24,11 +24,22 @@ async function main() {
   const rootResourceId = await getApiGatewayRootResourceId();
   console.log(`Root resource ID: ${rootResourceId}`);
 
+  // Load .env manually for LocalStack deployment
+  const envPath = path.join(__dirname, '..', '.env');
+  const envFile = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
+  const rsaKeyMatch = envFile.match(/^RSA_PUBLIC_KEY=(.*)$/m);
+  const rsaPublicKey = rsaKeyMatch ? rsaKeyMatch[1].trim() : process.env.RSA_PUBLIC_KEY;
+
+  if (!rsaPublicKey) {
+    console.warn('Warning: RSA_PUBLIC_KEY not found in .env or environment.');
+  }
+
   const env = {
     ...process.env,
     AWS_ACCESS_KEY_ID: 'test',
     AWS_SECRET_ACCESS_KEY: 'test',
     API_GW_ROOT_RESOURCE_ID: rootResourceId,
+    RSA_PUBLIC_KEY: rsaPublicKey,
   };
 
   const serverlessDir = path.join(__dirname, '..', '.serverless');
