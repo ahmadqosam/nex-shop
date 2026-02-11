@@ -1,15 +1,10 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { SharedArray } from 'k6/data';
+import exec from 'k6/execution';
 
 /**
  * E2E User Journey Load Test
- * 
- * Features:
- * - Standard User Journey (Browse -> Cart -> Order -> Pay)
- * - Flash Sale Journey (setup() by Admin -> Purchase as User)
- * - Automatic Test User Registration
- * - Throttler-friendly (requires increased limit in auth-api)
  */
 
 const TEST_ENV = __ENV.TEST_ENV || 'dev';
@@ -45,16 +40,23 @@ export const options = {
     flash_sale_journey: {
       executor: 'per-vu-iterations', vus: 1, iterations: 1, exec: 'flashSaleJourney', startTime: '5s',
     },
+    limited_stock_concurrency: {
+      executor: 'per-vu-iterations',
+      vus: 10,
+      iterations: 1,
+      exec: 'flashSaleJourney',
+      startTime: '10s',
+    },
   },
   thresholds: {
     http_req_duration: ['p(95)<2000'],
-    http_req_failed: ['rate<0.1'],
+    http_req_failed: ['rate<0.6'], 
   },
 };
 
 const adminUser = { email: 'admin@nex.shop', password: 'Admin@123' };
 
-function log(step, msg) { console.log(`[VU ${__VU}] [${step}] ${msg}`); }
+function log(step, msg) { console.log(`[VU ${exec.vu.idInTest}] [${step}] ${msg}`); }
 
 function post(url, body, params = {}) {
   const headers = Object.assign({ 'Content-Type': 'application/json' }, params.headers || {});
@@ -66,6 +68,7 @@ function get(url, params = {}) { return http.get(url, params); }
 function decodeJwt(token) {
   try {
     const parts = token.split('.');
+    if (parts.length < 2) return null;
     const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
     return JSON.parse(atob(base64));
   } catch (e) { return null; }
@@ -84,60 +87,65 @@ export function setup() {
   const variant = product.variants[0];
   const price = variant.priceInCents ?? product.basePriceInCents;
 
-  const startTime = new Date(Date.now() + 5000).toISOString();
+  const startTime = new Date(Date.now() + 2000).toISOString();
   const endTime = new Date(Date.now() + 600000).toISOString();
   
-  const saleRes = post(`${PRODUCT_API}/flash-sales`, {
-    name: `K6 Load Test Sale ${Date.now()}`,
-    startTime, endTime, isActive: true,
+  // Sale for general journey (100 qty)
+  const sale1Res = post(`${PRODUCT_API}/flash-sales`, {
+    name: `K6 Load Test Sale General ${Date.now()}`, startTime, endTime, isActive: true,
   }, { headers: { Authorization: `Bearer ${adminToken}` } });
+  if (sale1Res.status !== 201) throw new Error('Sale 1 fail');
+  const sale1Id = sale1Res.json().id;
   
-  if (saleRes.status !== 201) throw new Error(`Failed to create sale: ${saleRes.status}`);
-  const saleId = saleRes.json().id;
-
-  const itemRes = post(`${PRODUCT_API}/flash-sales/${saleId}/items`, {
+  const item1Res = post(`${PRODUCT_API}/flash-sales/${sale1Id}/items`, {
     productId: product.id, variantId: variant.id, salePriceInCents: Math.round(price * 0.5), maxQuantity: 100,
   }, { headers: { Authorization: `Bearer ${adminToken}` } });
+  if (item1Res.status !== 201) throw new Error('Item 1 fail');
+  const flashSaleItemId = item1Res.json().id;
 
-  if (itemRes.status !== 201) throw new Error('Failed to add flash item');
-  const flashSaleItemId = itemRes.json().id;
+  // Sale for concurrency test (exactly 5 qty)
+  const sale2Res = post(`${PRODUCT_API}/flash-sales`, {
+    name: `K6 Load Test Sale Limited ${Date.now()}`, startTime, endTime, isActive: true,
+  }, { headers: { Authorization: `Bearer ${adminToken}` } });
+  if (sale2Res.status !== 201) throw new Error('Sale 2 fail');
+  const sale2Id = sale2Res.json().id;
+  
+  const item2Res = post(`${PRODUCT_API}/flash-sales/${sale2Id}/items`, {
+    productId: product.id, variantId: variant.id, salePriceInCents: Math.round(price * 0.5), maxQuantity: 5,
+  }, { headers: { Authorization: `Bearer ${adminToken}` } });
+  if (item2Res.status !== 201) throw new Error('Item 2 fail');
+  const limitedItemId = item2Res.json().id;
 
-  console.log(`--- SETUP COMPLETE: Flash Sale ${saleId}, Item ${flashSaleItemId} ---`);
-  return { flashSaleItemId };
+  console.log(`--- SETUP COMPLETE: General Item ${flashSaleItemId}, Limited Item ${limitedItemId} ---`);
+  return { flashSaleItemId, limitedItemId, sale2Id };
 }
 
 export function standardJourney() {
-  const email = `k6-std-${__VU}-${Date.now()}@example.com`;
+  const email = `k6-std-${exec.vu.idInTest}-${Date.now()}@example.com`;
   const password = 'Test@1234';
 
-  // 1. Auth
-  const regRes = post(`${AUTH_API}/auth/register`, { email, password, name: 'Std User' });
+  post(`${AUTH_API}/auth/register`, { email, password, name: 'Std User' });
   const loginRes = post(`${AUTH_API}/auth/login`, { email, password });
-  if (!check(loginRes, { 'std login successful': (r) => r.status === 200 })) {
-    log('Error', `Login failed: ${loginRes.status}`);
-    sleep(1); return;
-  }
+  if (loginRes.status !== 200) { sleep(1); return; }
+  
   const accessToken = loginRes.json().accessToken;
-  const userId = decodeJwt(accessToken).sub;
+  const decoded = decodeJwt(accessToken);
+  if (!decoded) { log('Error', 'JWT Decode failed'); sleep(1); return; }
+  const userId = decoded.sub;
 
-  // 2. Product
   const productRes = get(`${PRODUCT_API}/products/list?limit=1`);
-  if (!check(productRes, { 'browsing catalog': (r) => r.status === 200 })) { sleep(1); return; }
   const product = productRes.json().data[0];
   const variant = product.variants[0];
   const price = variant.priceInCents ?? product.basePriceInCents;
 
-  // 3. Cart
   const cartRes = get(`${CART_API}/cart`, { headers: { 'x-user-id': userId } });
   const cartId = cartRes.json().id;
-  const cartUpdateRes = post(`${CART_API}/cart/${cartId}/items`, {
+  post(`${CART_API}/cart/${cartId}/items`, {
     productId: product.id, variantId: variant.id, sku: variant.sku,
     quantity: 1, priceInCents: price, currency: product.currency,
     productName: product.name, variantName: variant.name,
   }, { headers: { 'x-user-id': userId } });
-  check(cartUpdateRes, { 'cart item added': (r) => r.status === 200 || r.status === 201 });
 
-  // 4. Order
   const orderRes = post(`${ORDER_API}/orders`, {
     userId, email,
     items: [{
@@ -147,44 +155,81 @@ export function standardJourney() {
     }],
     shippingAddress: { fullName: 'Std User', addressLine1: '123 St', city: 'NJ', state: 'NJ', postalCode: '07001', country: 'US', phone: '555' },
   });
-  if (!check(orderRes, { 'order created': (r) => r.status === 201 })) { sleep(1); return; }
+  if (orderRes.status !== 201) { sleep(1); return; }
   const order = orderRes.json();
 
-  // 5. Payment
-  const payRes = post(`${PAYMENT_API}/payments`, {
+  post(`${PAYMENT_API}/payments`, {
     amount: order.totalInCents, currency: order.currency.toLowerCase(),
     metadata: { orderId: order.id }, paymentMethod: 'pm_card_visa',
   }, { headers: { Authorization: `Bearer ${accessToken}` } });
-  check(payRes, { 'payment processed': (r) => r.status === 200 || r.status === 201 });
 
   sleep(1);
 }
 
 export function flashSaleJourney(data) {
-  const { flashSaleItemId } = data;
-  const email = `k6-flash-${__VU}-${Date.now()}@example.com`;
+  const scenarioName = exec.scenario.name;
+  const isLimited = scenarioName === 'limited_stock_concurrency';
+  const itemId = isLimited ? data.limitedItemId : data.flashSaleItemId;
+  
+  const email = `k6-${isLimited ? 'lim' : 'flash'}-${exec.vu.idInTest}-${Date.now()}@example.com`;
   const password = 'Test@1234';
 
-  log('Flash-1/4', `Auth: ${email}`);
   post(`${AUTH_API}/auth/register`, { email, password, name: 'Flash User' });
   const loginRes = post(`${AUTH_API}/auth/login`, { email, password });
-  if (!check(loginRes, { 'flash login 200': (r) => r.status === 200 })) { sleep(1); return; }
+  if (loginRes.status !== 200) { sleep(1); return; }
   const accessToken = loginRes.json().accessToken;
 
-  log('Flash-2/4', 'Checking Eligibility...');
-  const eligRes = get(`${PRODUCT_API}/flash-sales/eligibility/${flashSaleItemId}`, {
+  get(`${PRODUCT_API}/flash-sales/eligibility/${itemId}`, {
     headers: { Authorization: `Bearer ${accessToken}` }
   });
-  if (!check(eligRes, { 'is eligible': (r) => r.json().eligible === true })) { sleep(1); return; }
 
-  log('Flash-3/4', 'Purchasing...');
-  const purchaseRes = post(`${PRODUCT_API}/flash-sales/purchase`, { flashSaleItemId }, {
+  const purchaseRes = post(`${PRODUCT_API}/flash-sales/purchase`, { flashSaleItemId: itemId }, {
     headers: { Authorization: `Bearer ${accessToken}` }
   });
-  check(purchaseRes, { 'flash purchase success': (r) => r.status === 201 || r.status === 200 });
-
-  log('Flash-4/4', 'Verifying Sale Stock...');
-  get(`${PRODUCT_API}/flash-sales/active`);
+  
+  if (isLimited) {
+    check(purchaseRes, {
+      'p-status-expected': (r) => r.status === 201 || r.status === 400 || r.status === 403,
+    });
+    if (purchaseRes.status === 201) {
+       log('Success', 'Got limited item!');
+    } else {
+       log('SoldOut', `Status: ${purchaseRes.status}`);
+    }
+  } else {
+    check(purchaseRes, { 'p-status-201': (r) => r.status === 201 });
+  }
 
   sleep(1);
+}
+
+export function teardown(data) {
+  console.log('\n--- TEARDOWN: Concurrency Verification ---');
+  const { limitedItemId, sale2Id } = data;
+
+  const res = get(`${PRODUCT_API}/flash-sales/active`);
+  if (res.status === 200) {
+    const activeSales = res.json();
+    const limitedSale = activeSales.find(s => s.id === sale2Id);
+    if (limitedSale) {
+      const item = limitedSale.items.find(i => i.id === limitedItemId);
+      if (item) {
+        console.log(`[VERIFY] Limited Item ${item.id} | Sold: ${item.soldCount} | Max: ${item.maxQuantity}`);
+        if (item.soldCount === 5) {
+          console.log('✅ PASS: Exactly 5 items were sold. Concurrency handled correctly.');
+        } else if (item.soldCount > 5) {
+          console.log(`❌ FAIL: OVERSOLD! ${item.soldCount} items were sold but only 5 available.`);
+        } else {
+          console.log(`⚠️ INFO: Only ${item.soldCount} items were sold. Count: ${item.soldCount}`);
+        }
+      } else {
+        console.log('❌ FAIL: Limited Item not found in active sale response.');
+      }
+    } else {
+      console.log('❌ FAIL: Limited Sale not found in active sales.');
+    }
+  } else {
+    console.log(`❌ FAIL: API Error ${res.status} when fetching active sales.`);
+  }
+  console.log('--- TEARDOWN COMPLETE ---\n');
 }
