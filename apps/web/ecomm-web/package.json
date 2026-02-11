@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "wait-on http://localhost:4002 http://localhost:4001 && next dev",
+    "dev": "wait-on http://localhost:4001 http://localhost:4002 && env-cmd -f .env.development next dev",
+    "dev:localstack": "wait-on http://localhost:4566/restapis/nex-gw/local/_user_request_/auth-svc/health && env-cmd -f .env.localstack next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

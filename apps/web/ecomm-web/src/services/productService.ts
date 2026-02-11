@@ -2,9 +2,11 @@ import { Product, ProductResponseDto, PaginatedProductsResponseDto } from '../ty
 
 const PRODUCT_API_URL = process.env.PRODUCT_API_URL || 'http://localhost:4002';
 
+console.log('PRODUCT_API_URL', PRODUCT_API_URL);
+
 const PRODUCT_API_BASE = typeof window === 'undefined'
   ? `${PRODUCT_API_URL}/products`
-  : '/api/products';
+  : '/products';
 
 export class ProductServiceError extends Error {
   statusCode: number;
@@ -90,7 +92,7 @@ export async function getAllProducts(category?: string): Promise<Product[]> {
   // Optional: Add limit=100 so we see all products for now, until pagination is added to UI
   params.append('limit', '100');
   
-  const response = await fetch(`${PRODUCT_API_BASE}?${params.toString()}`);
+  const response = await fetch(`${PRODUCT_API_BASE}/list?${params.toString()}`);
   const data = await handleResponse<PaginatedProductsResponseDto>(response);
   return data.data.map(transformProduct);
 }

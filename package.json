@@ -10,6 +10,7 @@
     "build": "turbo build",
     "clean:ports": "bash scripts/cleanup-ports.sh",
     "dev": "bash scripts/cleanup-ports.sh && docker compose up -d --wait && turbo dev",
+    "dev:localstack": "pnpm infra:up:localstack && turbo dev:localstack",
     "dev:services": "turbo dev",
     "lint": "turbo lint",
     "test": "turbo test",
@@ -23,6 +24,7 @@
     "test:e2e:journey": "TEST_ENV=localstack npx tsx scripts/user-journey.e2e.ts"
   },
   "devDependencies": {
+    "env-cmd": "^11.0.0",
     "prettier": "^3.4.2",
     "turbo": "^2.5.0"
   },

@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
         port: '4002',
       },
       {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '4566',
+      },
+      {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
@@ -32,35 +37,45 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    const apiUrl = process.env.AUTH_API_URL || 'http://localhost:4001';
+    const authUrl = process.env.AUTH_API_URL || 'http://localhost:4001';
+    const productUrl = process.env.PRODUCT_API_URL || 'http://localhost:4002';
+    const inventoryUrl = process.env.INVENTORY_API_URL || 'http://localhost:4003';
+    const cartUrl = process.env.CART_API_URL || 'http://localhost:4004';
+    const orderUrl = process.env.ORDER_API_URL || 'http://localhost:4005';
+    const paymentUrl = process.env.PAYMENT_API_URL || 'http://localhost:4006';
+
     return [
       {
         source: '/api/auth/:path*',
-        destination: `${apiUrl}/auth/:path*`,
+        destination: `${authUrl}/auth/:path*`,
       },
       {
         source: '/api/docs-json',
-        destination: `${apiUrl}/api/docs-json`,
+        destination: `${productUrl}/api/docs-json`,
       },
       {
         source: '/api/products/:path*',
-        destination: `http://localhost:4002/products/:path*`,
+        destination: `${productUrl}/products/:path*`,
       },
       {
         source: '/images/:path*',
-        destination: `http://localhost:4002/images/:path*`,
+        destination: `${productUrl}/images/:path*`,
+      },
+      {
+        source: '/api/inventory/:path*',
+        destination: `${inventoryUrl}/inventory/:path*`,
       },
       {
         source: '/api/cart/:path*',
-        destination: 'http://localhost:4004/cart/:path*',
+        destination: `${cartUrl}/cart/:path*`,
       },
       {
         source: '/api/orders/:path*',
-        destination: 'http://localhost:4005/orders/:path*',
+        destination: `${orderUrl}/orders/:path*`,
       },
       {
         source: '/api/payments/:path*',
-        destination: 'http://localhost:4006/payments/:path*',
+        destination: `${paymentUrl}/payments/:path*`,
       },
     ];
   },

@@ -44,6 +44,10 @@
       "cache": false,
       "persistent": true
     },
+    "dev:localstack": {
+      "cache": false,
+      "persistent": true
+    },
     "product-api#dev": {
       "dependsOn": ["product-api#prisma:generate"],
       "cache": false,
