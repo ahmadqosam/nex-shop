@@ -13,53 +13,103 @@ datasource db {
 }
 
 model Product {
-  id                   String    @id @default(uuid())
+  id                   String           @id @default(uuid())
   name                 String
-  slug                 String    @unique
+  slug                 String           @unique
   category             String
 
   // Base pricing in cents (variants can override)
-  basePriceInCents     Int       @map("base_price_in_cents")
-  currency             String    @default("USD")
+  basePriceInCents     Int              @map("base_price_in_cents")
+  currency             String           @default("USD")
 
   // Product details
   description          String?
-  tags                 String[]  @default([])
-  images               String[]  @default([])
+  tags                 String[]         @default([])
+  images               String[]         @default([])
   specifications       Json?
 
   // Availability
-  isAvailable          Boolean   @default(true) @map("is_available")
+  isAvailable          Boolean          @default(true) @map("is_available")
 
   // Shipping
-  weightInGrams        Int?      @map("weight_in_grams")
+  weightInGrams        Int?             @map("weight_in_grams")
 
   // Variants
   variants             Variant[]
+  flashSaleItems       FlashSaleItem[]
 
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @updatedAt @map("updated_at")
+  createdAt            DateTime         @default(now()) @map("created_at")
+  updatedAt            DateTime         @updatedAt @map("updated_at")
 
   @@map("products")
 }
 
 model Variant {
-  id           String   @id @default(uuid())
-  sku          String   @unique
-  name         String   // "Black", "White", "256GB", etc.
+  id             String           @id @default(uuid())
+  sku            String           @unique
+  name           String           // "Black", "White", "256GB", etc.
   
   // Price override (null = use product basePriceInCents)
-  priceInCents Int?     @map("price_in_cents")
+  priceInCents   Int?             @map("price_in_cents")
   
   // Flexible attributes: { color: "#000000", size: "L" }
-  attributes   Json     @default("{}")
+  attributes     Json             @default("{}")
   
   // Relation to Product
-  productId    String   @map("product_id")
-  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId      String           @map("product_id")
+  product        Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  flashSaleItems FlashSaleItem[]
+
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
 
   @@map("variants")
+}
+
+model FlashSale {
+  id        String          @id @default(uuid())
+  name      String
+  startTime DateTime        @map("start_time")
+  endTime   DateTime        @map("end_time")
+  isActive  Boolean         @default(true) @map("is_active")
+  items     FlashSaleItem[]
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+
+  @@index([startTime, endTime])
+  @@index([isActive])
+  @@map("flash_sales")
+}
+
+model FlashSaleItem {
+  id               String              @id @default(uuid())
+  productId        String              @map("product_id")
+  product          Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId        String?             @map("variant_id")
+  variant          Variant?            @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  flashSaleId      String              @map("flash_sale_id")
+  flashSale        FlashSale           @relation(fields: [flashSaleId], references: [id], onDelete: Cascade)
+  salePriceInCents Int                 @map("sale_price_in_cents")
+  maxQuantity      Int                 @map("max_quantity")
+  soldCount        Int                 @default(0) @map("sold_count")
+  version          Int                 @default(0)
+  purchases        FlashSalePurchase[]
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+
+  @@unique([flashSaleId, productId, variantId], name: "unique_flash_sale_product_variant")
+  @@map("flash_sale_items")
+}
+
+model FlashSalePurchase {
+  id              String        @id @default(uuid())
+  userId          String        @map("user_id")
+  flashSaleItemId String        @map("flash_sale_item_id")
+  flashSaleItem   FlashSaleItem @relation(fields: [flashSaleItemId], references: [id], onDelete: Cascade)
+  purchasedAt     DateTime      @default(now()) @map("purchased_at")
+
+  @@unique([userId, flashSaleItemId], name: "unique_user_flash_sale_item")
+  @@index([userId])
+  @@map("flash_sale_purchases")
 }
