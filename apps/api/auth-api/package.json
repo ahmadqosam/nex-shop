@@ -24,8 +24,8 @@
     "migration:run": "pnpm typeorm migration:run -d src/database/data-source.ts",
     "migration:revert": "pnpm typeorm migration:revert -d src/database/data-source.ts",
     "seed": "ts-node --project tsconfig.typeorm.json -r tsconfig-paths/register src/database/seed.ts",
-    "build:lambda": "nest build",
-    "deploy:local": "pnpm build:lambda && serverless deploy --stage local"
+    "build:lambda": "node scripts/build-lambda.js",
+    "deploy:local": "node scripts/deploy-local.js"
   },
   "dependencies": {
     "@codegenie/serverless-express": "^4.17.1",
@@ -43,6 +43,7 @@
     "class-validator": "^0.14.3",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.4",
+    "express": "^5.2.1",
     "ioredis": "^5.9.2",
     "joi": "^18.0.2",
     "passport": "^0.7.0",
@@ -50,7 +51,9 @@
     "pg": "^8.18.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "typeorm": "^0.3.28"
+    "tslib": "^2.8.1",
+    "typeorm": "^0.3.28",
+    "uid": "^2.0.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

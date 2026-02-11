@@ -26,4 +26,8 @@ awslocal sqs create-queue --queue-name inventory-order-events-dlq
 awslocal sqs create-queue --queue-name inventory-order-events-queue --attributes '{"RedrivePolicy": "{\"deadLetterTargetArn\":\"arn:aws:sqs:us-east-1:000000000000:inventory-order-events-dlq\",\"maxReceiveCount\":\"3\"}"}'
 awslocal sns subscribe --topic-arn arn:aws:sns:us-east-1:000000000000:order-events --protocol sqs --notification-endpoint arn:aws:sqs:us-east-1:000000000000:inventory-order-events-queue
 
+awslocal apigateway create-rest-api \
+    --name "nex-api" \
+    --tags '{"_custom_id_":"nex-gw", "_custom_id_root_": "nex-infra"}'
+
 echo "LocalStack initialization complete."

@@ -1,6 +1,6 @@
 service: auth-api
 
-frameworkVersion: '3'
+# frameworkVersion: '3'
 
 plugins:
   - serverless-localstack
@@ -19,14 +19,17 @@ provider:
   stage: ${opt:stage, 'local'}
   memorySize: 512
   timeout: 30
+  apiGateway:
+    restApiId: nex-gw
+    restApiRootResourceId: ${env:API_GW_ROOT_RESOURCE_ID}
   environment:
     NODE_ENV: production
-    DB_HOST: ${env:DB_HOST, 'host.docker.internal'}
+    DB_HOST: ${env:DB_HOST, 'postgres'}
     DB_PORT: ${env:DB_PORT, '5432'}
     DB_USERNAME: ${env:DB_USERNAME, 'auth_user'}
     DB_PASSWORD: ${env:DB_PASSWORD, 'auth_password'}
     DB_NAME: ${env:DB_NAME, 'auth_db'}
-    REDIS_HOST: ${env:REDIS_HOST, 'host.docker.internal'}
+    REDIS_HOST: ${env:REDIS_HOST, 'redis'}
     REDIS_PORT: ${env:REDIS_PORT, '6379'}
     REDIS_PASSWORD: ${env:REDIS_PASSWORD, ''}
     JWT_ACCESS_TOKEN_TTL: ${env:JWT_ACCESS_TOKEN_TTL, '900'}
@@ -48,9 +51,5 @@ functions:
 package:
   individually: true
   patterns:
-    - '!src/**'
-    - '!test/**'
-    - '!keys/**'
-    - '!.env*'
+    - '!**'
     - 'dist/**'
-    - 'node_modules/**'
