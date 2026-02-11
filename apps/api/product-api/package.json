@@ -59,6 +59,7 @@
     "@types/aws-lambda": "^8.10.160",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.10.7",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.2",
@@ -67,6 +68,7 @@
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^16.0.0",
     "jest": "^30.0.0",
+    "jsonwebtoken": "^9.0.3",
     "prettier": "^3.4.2",
     "prisma": "^6.3.1",
     "serverless": "3",
@@ -100,7 +102,10 @@
       "!config/**",
       "!common/**",
       "!**/dto/**",
-      "!**/index.ts"
+      "!**/index.ts",
+      "!**/interfaces/**",
+      "!**/decorators/**",
+      "!**/enums/**"
     ],
     "coverageDirectory": "../coverage",
     "coverageThreshold": {

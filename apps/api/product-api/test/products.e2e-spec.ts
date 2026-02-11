@@ -4,7 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import request from 'supertest';
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/product-client';
 import Redis from 'ioredis';
 import { AppController } from '../src/app.controller';
 import { AppService } from '../src/app.service';
@@ -24,10 +24,9 @@ describe('Products API (e2e) - Testcontainers', () => {
       name: 'Test Product 1',
       slug: 'test-product-1',
       category: 'Headphone',
-      price: 299,
+      basePriceInCents: 299,
       description: 'Test description 1',
       tags: ['New'],
-      colors: ['#000000'],
       images: ['/images/test-1.jpg'],
       specifications: { driver_size: '40mm' },
     },
@@ -35,10 +34,9 @@ describe('Products API (e2e) - Testcontainers', () => {
       name: 'Test Product 2',
       slug: 'test-product-2',
       category: 'Speaker',
-      price: 499,
+      basePriceInCents: 499,
       description: 'Test description 2',
       tags: ['Best Seller'],
-      colors: ['#FFFFFF'],
       images: ['/images/test-2.jpg'],
       specifications: { battery_life: '10 hours' },
     },
@@ -46,10 +44,9 @@ describe('Products API (e2e) - Testcontainers', () => {
       name: 'Another Headphone',
       slug: 'another-headphone',
       category: 'Headphone',
-      price: 199,
+      basePriceInCents: 199,
       description: 'Another test product',
       tags: [],
-      colors: ['#FF0000'],
       images: ['/images/test-3.jpg'],
       specifications: {},
     },
@@ -74,6 +71,9 @@ describe('Products API (e2e) - Testcontainers', () => {
     process.env.REDIS_PORT = redisContainer.getPort().toString();
     process.env.REDIS_PASSWORD = '';
     process.env.CACHE_TTL = '60';
+    process.env.RSA_PUBLIC_KEY = Buffer.from(
+      '-----BEGIN PUBLIC KEY-----\nMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAMPPntYOR5X8u5Y/lXbORm9IFflvlh+tWILvZ7Ss9cVfhHfor9b2ZBXUoxDOYCcEeFZrvbM7ql/h3OcuCniLm8CAwEAAQ==\n-----END PUBLIC KEY-----',
+    ).toString('base64');
     process.env.NODE_ENV = 'test';
 
     // Initialize Prisma client for setup

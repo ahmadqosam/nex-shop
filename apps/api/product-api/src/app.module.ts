@@ -9,7 +9,8 @@ import { PrismaModule } from './prisma';
 import { CacheModule } from './cache';
 import { ProductsModule } from './products';
 import { configValidationSchema } from './config';
-import { AuthModule, JwtAuthGuard } from './auth';
+import { AuthModule, JwtAuthGuard, RolesGuard } from './auth';
+import { FlashSaleModule } from './flash-sale';
 
 @Module({
   imports: [
@@ -27,14 +28,13 @@ import { AuthModule, JwtAuthGuard } from './auth';
     CacheModule,
     ProductsModule,
     AuthModule,
+    FlashSaleModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
   ],
 })
 export class AppModule {}

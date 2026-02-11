@@ -8,6 +8,9 @@ describe('Product API (e2e)', () => {
   let app: INestApplication<App>;
 
   beforeAll(async () => {
+    process.env.RSA_PUBLIC_KEY = Buffer.from(
+      '-----BEGIN PUBLIC KEY-----\nMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAMPPntYOR5X8u5Y/lXbORm9IFflvlh+tWILvZ7Ss9cVfhHfor9b2ZBXUoxDOYCcEeFZrvbM7ql/h3OcuCniLm8CAwEAAQ==\n-----END PUBLIC KEY-----',
+    ).toString('base64');
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
