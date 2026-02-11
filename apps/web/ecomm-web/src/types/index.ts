@@ -1,6 +1,4 @@
-import { User } from './auth';
-
-export type { User };
+export * from './flash-sale';
 
 export interface Product {
   id: string;
@@ -16,6 +14,15 @@ export interface Product {
   isBestSeller?: boolean;
   colors?: string[];
   variants?: ProductVariant[];
+  flashSale?: {
+    flashSaleItemId: string;
+    salePriceInCents: number;
+    originalPriceInCents: number;
+    remainingQuantity: number;
+    maxQuantity: number;
+    saleEndTime: string;
+    saleName: string;
+  };
 }
 
 export interface ProductVariant {

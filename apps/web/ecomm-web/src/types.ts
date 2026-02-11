@@ -10,6 +10,15 @@ export interface Product {
   isNew?: boolean;
   isBestSeller?: boolean;
   colors?: string[];
+  flashSale?: {
+    flashSaleItemId: string;
+    salePriceInCents: number;
+    originalPriceInCents: number;
+    remainingQuantity: number;
+    maxQuantity: number;
+    saleEndTime: string;
+    saleName: string;
+  };
 }
 
 export interface CartItem extends Product {

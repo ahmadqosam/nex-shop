@@ -58,6 +58,10 @@ const nextConfig: NextConfig = {
         destination: `${productUrl}/products/:path*`,
       },
       {
+        source: '/api/flash-sales/:path*',
+        destination: `${productUrl}/flash-sales/:path*`,
+      },
+      {
         source: '/images/:path*',
         destination: `${productUrl}/images/:path*`,
       },

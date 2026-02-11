@@ -1,4 +1,5 @@
 import { Product, ProductResponseDto, PaginatedProductsResponseDto } from '../types';
+import { getActiveFlashSales, getFlashSaleForProduct } from './flashSaleService';
 
 const PRODUCT_API_URL = process.env.PRODUCT_API_URL || 'http://localhost:4002';
 
@@ -6,7 +7,7 @@ console.log('PRODUCT_API_URL', PRODUCT_API_URL);
 
 const PRODUCT_API_BASE = typeof window === 'undefined'
   ? `${PRODUCT_API_URL}/products`
-  : '/products';
+  : '/api/products';
 
 export class ProductServiceError extends Error {
   statusCode: number;
@@ -94,7 +95,33 @@ export async function getAllProducts(category?: string): Promise<Product[]> {
   
   const response = await fetch(`${PRODUCT_API_BASE}/list?${params.toString()}`);
   const data = await handleResponse<PaginatedProductsResponseDto>(response);
-  return data.data.map(transformProduct);
+  const products = data.data.map(transformProduct);
+
+  // Enrich with flash sale data
+  try {
+    const activeSales = await getActiveFlashSales();
+    products.forEach(product => {
+      for (const sale of activeSales) {
+        const saleItem = sale.items.find((item: any) => item.productId === product.id);
+        if (saleItem) {
+          product.flashSale = {
+            flashSaleItemId: saleItem.id,
+            salePriceInCents: saleItem.salePriceInCents,
+            originalPriceInCents: saleItem.originalPriceInCents,
+            remainingQuantity: saleItem.remainingQuantity,
+            maxQuantity: saleItem.maxQuantity,
+            saleEndTime: sale.endTime,
+            saleName: sale.name,
+          };
+          break;
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Failed to fetch active flash sales, skipping enrichment:', error);
+  }
+
+  return products;
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
@@ -109,7 +136,29 @@ export async function getProductById(id: string): Promise<Product | null> {
     }
     
     const productDto: ProductResponseDto = await res.json();
-    return transformProduct(productDto);
+    const product = transformProduct(productDto);
+
+    // Enrich with flash sale data
+    try {
+      const saleItem = await getFlashSaleForProduct(id);
+      if (saleItem) {
+        product.flashSale = {
+          flashSaleItemId: saleItem.id,
+          salePriceInCents: saleItem.salePriceInCents,
+          originalPriceInCents: saleItem.originalPriceInCents,
+          remainingQuantity: saleItem.remainingQuantity,
+          maxQuantity: saleItem.maxQuantity,
+          saleEndTime: 'unknown', // Need to check if we can get this from backend or if we need to fetch active sales for details
+          saleName: 'Flash Sale',   // Placeholder if not in item DTO
+        };
+        // If we need the end time and name, we'd need to fetch active sales or update backend item DTO
+        // For now, mirroring implementation plan's enrichment logic
+      }
+    } catch (error) {
+      console.error(`Failed to fetch flash sale for product ${id}, skipping enrichment:`, error);
+    }
+
+    return product;
   } catch (error) {
     if (error instanceof ProductServiceError) throw error;
     throw new ProductServiceError('Network error or invalid response', 500);
