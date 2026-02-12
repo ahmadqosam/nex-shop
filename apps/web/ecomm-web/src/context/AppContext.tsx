@@ -28,6 +28,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const USER_STORAGE_KEY = 'nex_user';
+const TOKEN_STORAGE_KEY = 'nex_access_token';
 const SESSION_STORAGE_KEY = 'nex_session_id';
 const REFRESH_BUFFER_MS = 60000; // Refresh 1 minute before expiry
 
@@ -54,15 +55,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (savedUser) {
           setUser(JSON.parse(savedUser));
           
+          // Try to restore token from sessionStorage first for faster recovery
+          const savedToken = sessionStorage.getItem(TOKEN_STORAGE_KEY);
+          if (savedToken) {
+            setAuthState(prev => ({ ...prev, accessToken: savedToken }));
+          }
+
           // Try to refresh token if we have a user
           try {
+            console.log('Refreshing token on initialization...');
             const response = await authService.refreshToken();
             setAuthState({
               accessToken: response.accessToken,
               expiresAt: Date.now() + response.expiresIn * 1000,
             });
+            sessionStorage.setItem(TOKEN_STORAGE_KEY, response.accessToken);
           } catch (error) {
             console.log('Initial token refresh failed:', error);
+            // If refresh fails and we have no saved token, we might need to logout
+            if (!savedToken) {
+              console.log('No saved token and refresh failed, clearing user');
+              setUser(null);
+            }
           }
         }
 
@@ -102,7 +116,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     fetchCart();
   }, [sessionId, user?.id, authState.accessToken, isAuthLoading]);
 
-  // Persist user
+  // Persist user and token
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if (user) {
@@ -112,6 +126,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
   }, [user]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (authState.accessToken) {
+        sessionStorage.setItem(TOKEN_STORAGE_KEY, authState.accessToken);
+      } else {
+        sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+      }
+    }
+  }, [authState.accessToken]);
 
   // Setup token refresh (refresh token is in httpOnly cookie, managed by browser)
   const scheduleRefresh = useCallback(() => {
@@ -131,6 +155,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           accessToken: response.accessToken,
           expiresAt: Date.now() + response.expiresIn * 1000,
         });
+        sessionStorage.setItem(TOKEN_STORAGE_KEY, response.accessToken);
       } catch {
         // Token refresh failed, logout
         setUser(null);

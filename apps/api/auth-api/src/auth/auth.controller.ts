@@ -128,7 +128,7 @@ export class AuthController {
       httpOnly: true,
       secure: this.isProduction,
       sameSite: 'strict',
-      path: '/auth',
+      path: '/api/auth',
       maxAge: this.refreshTokenTtl * 1000,
     });
   }
@@ -138,7 +138,7 @@ export class AuthController {
       httpOnly: true,
       secure: this.isProduction,
       sameSite: 'strict',
-      path: '/auth',
+      path: '/api/auth',
     });
   }
 }

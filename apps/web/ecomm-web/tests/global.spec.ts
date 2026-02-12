@@ -10,6 +10,7 @@ test('Global Application Flow', async ({ page }) => {
   await page.getByPlaceholder('you@example.com').fill(uniqueEmail);
   await page.getByPlaceholder('••••••••').fill('Password123!');
   await page.getByRole('button', { name: 'Sign Up' }).click();
+  await page.waitForTimeout(1000);
   await expect(page).toHaveURL('/');
 
   // 1. Go to Home
@@ -71,10 +72,12 @@ test('Global Application Flow', async ({ page }) => {
   
   // 9. Agree to terms and Submit
   await page.locator('input[type="checkbox"]').check({ force: true });
+  await page.waitForTimeout(1000); // wait for checkout button to be enabled
   const checkoutButton = page.getByRole('button', { name: /Checkout/i }).last(); // The one in OrderSummary
   await checkoutButton.click({ force: true });
   
   // 10. Success
+  await page.waitForTimeout(2000);
   await expect(page.getByText('Order Confirmed')).toBeVisible({ timeout: 20 * 1000 });
   
   // 11. Back to Home
