@@ -2,6 +2,10 @@
 
 Nex-Shop is a modern, microservices-based e-commerce platform designed for performance, scalability, and robustness. It features a Next.js frontend and a set of NestJS-based backend services, integrated with an event-driven architecture using AWS SNS/SQS.
 
+## 📺 User Journey Preview
+
+<video src="./assets/user-journey.webm" width="100%" autoplay loop muted></video>
+
 ## 🏗️ Architecture
 
 ![Nex-Shop Architecture](./assets/nex-shop-arch-diagram.png)
