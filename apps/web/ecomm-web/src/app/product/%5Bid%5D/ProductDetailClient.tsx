@@ -169,7 +169,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                  <div key={i} className="relative aspect-square bg-[#F5F5F7] rounded-2xl overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
                     <Image 
                       src={product.image} 
-                      alt={`${product.name} view ${i}`}
+                      alt={`${product.name} Detail View ${i}`}
                       fill
                       className="object-contain p-8"
                     />

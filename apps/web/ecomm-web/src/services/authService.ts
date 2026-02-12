@@ -33,7 +33,8 @@ async function handleResponse<T>(response: Response): Promise<T> {
     
     throw new AuthServiceError(message as string, response.status);
   }
-  return response.json();
+  const text = await response.text();
+  return (text ? JSON.parse(text) : null) as T;
 }
 
 export async function register(dto: RegisterDto): Promise<AuthResponseDto> {

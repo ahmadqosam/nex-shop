@@ -17,7 +17,8 @@ async function handleResponse<T>(response: Response): Promise<T> {
       response.status
     );
   }
-  return response.json();
+  const text = await response.text();
+  return (text ? JSON.parse(text) : null) as T;
 }
 
 function getHeaders(token?: string): HeadersInit {
@@ -68,6 +69,7 @@ function transformCart(apiCart: ApiCart): Cart {
       productId: item.productId,
       variantId: item.variantId,
       productName: item.productName,
+      name: item.productName, // Alias for compatibility with Product interface/alt text
       variantName: item.variantName,
       sku: item.sku,
       price: item.priceInCents / 100,

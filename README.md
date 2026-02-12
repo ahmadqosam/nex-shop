@@ -4,7 +4,7 @@ Nex-Shop is a modern, microservices-based e-commerce platform designed for perfo
 
 ## 🏗️ Architecture
 
-![Nex-Shop Architecture](./diagram/nex-shop-arch-diagram.png)
+![Nex-Shop Architecture](./assets/nex-shop-arch-diagram.png)
 
 Nex-Shop follows a microservices architecture with the following components:
 

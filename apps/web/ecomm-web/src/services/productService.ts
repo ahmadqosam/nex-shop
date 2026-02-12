@@ -25,7 +25,8 @@ async function handleResponse<T>(response: Response): Promise<T> {
     const message = errorBody.message || response.statusText;
     throw new ProductServiceError(message, response.status);
   }
-  return response.json();
+  const text = await response.text();
+  return (text ? JSON.parse(text) : null) as T;
 }
 
 function transformProduct(dto: ProductResponseDto): Product {

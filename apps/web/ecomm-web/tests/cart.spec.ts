@@ -24,6 +24,7 @@ test.describe('Cart Flow', () => {
     const addBtn = page.getByRole('button', { name: /Add to Bag/i });
     await expect(addBtn).toBeVisible({ timeout: 10000 });
     await addBtn.click();
+    await page.waitForTimeout(500); // wait for sidebar cart animation
 
     // 3. Verify Cart Sidebar opens
     const cartSidebar = page.getByText('Your Bag (', { exact: false }).first();
@@ -139,6 +140,7 @@ test.describe('Cart Flow', () => {
     const addBtn = page.getByRole('button', { name: /Add to Bag/i });
     await expect(addBtn).toBeVisible();
     await addBtn.click();
+    await page.waitForTimeout(500); // wait for sidebar cart animation
     await expect(page.getByText('Your Bag (1)')).toBeVisible();
     
     const guestItemName = await page.locator('h3.font-serif').first().innerText();

@@ -22,7 +22,7 @@ export default async function HomePage() {
         <div className="absolute inset-0">
           <Image 
             src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&q=80&w=2000" 
-            alt="Hero Headphone" 
+            alt="Wireless Noise-Canceling Headphones - Model wearing Nex Ace" 
             fill
             className="object-cover"
             priority
@@ -50,7 +50,7 @@ export default async function HomePage() {
                     <div className="relative overflow-hidden rounded-2xl mb-4 bg-gray-200 aspect-square">
                     <Image 
                         src={featuredProduct.image} 
-                        alt="Featured Product" 
+                        alt={`Featured Product: ${featuredProduct.name}`} 
                         fill
                         className="object-cover mix-blend-multiply transition-transform duration-500 group-hover:scale-110" 
                         />
@@ -77,7 +77,7 @@ export default async function HomePage() {
             <div className="mb-12 relative h-64 md:h-96 w-full max-w-lg mx-auto overflow-visible">
                 <Image 
                 src={featuredProduct.image} 
-                alt="Headphone Float" 
+                alt={`${featuredProduct.name} - Premium Wireless Headphones`} 
                 fill
                 className="object-contain drop-shadow-2xl animate-bounce-slow"
                 />

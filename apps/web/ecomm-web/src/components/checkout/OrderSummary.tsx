@@ -82,7 +82,7 @@ const OrderSummary: React.FC<Props> = ({ products, formData, onUpdate, onCheckou
             <Image 
               key={currentProduct.id}
               src={currentProduct.image} 
-              alt={currentProduct.name} 
+              alt={currentProduct.name || (currentProduct as any).productName} 
               fill
               sizes="(max-width: 768px) 100vw, 300px"
               className="object-contain transition-all duration-700 ease-in-out transform group-hover:scale-110" 

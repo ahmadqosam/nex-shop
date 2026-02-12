@@ -11,7 +11,7 @@ describe('flashSaleService', () => {
       const mockSales = [{ id: 'sale-1', name: 'Summer Sale', items: [] }];
       (fetch as any).mockResolvedValue({
         ok: true,
-        json: async () => mockSales,
+        text: async () => JSON.stringify(mockSales),
       });
 
       const result = await flashSaleService.getActiveFlashSales();
@@ -36,7 +36,7 @@ describe('flashSaleService', () => {
       const mockItem = { id: 'item-1', productId: 'prod-1' };
       (fetch as any).mockResolvedValue({
         ok: true,
-        json: async () => mockItem,
+        text: async () => JSON.stringify(mockItem),
       });
 
       const result = await flashSaleService.getFlashSaleForProduct('prod-1');
@@ -52,6 +52,16 @@ describe('flashSaleService', () => {
       const result = await flashSaleService.getFlashSaleForProduct('prod-1');
       expect(result).toBeNull();
     });
+
+    it('should return null if response body is empty (200 OK)', async () => {
+      (fetch as any).mockResolvedValue({
+        ok: true,
+        text: async () => '',
+      });
+
+      const result = await flashSaleService.getFlashSaleForProduct('prod-1');
+      expect(result).toBeNull();
+    });
   });
 
   describe('checkEligibility', () => {
@@ -59,7 +69,7 @@ describe('flashSaleService', () => {
       const mockEligibility = { eligible: true };
       (fetch as any).mockResolvedValue({
         ok: true,
-        json: async () => mockEligibility,
+        text: async () => JSON.stringify(mockEligibility),
       });
 
       const result = await flashSaleService.checkEligibility('item-1', 'token-123');
@@ -80,7 +90,7 @@ describe('flashSaleService', () => {
       const mockResult = { purchaseId: 'p-1' };
       (fetch as any).mockResolvedValue({
         ok: true,
-        json: async () => mockResult,
+        text: async () => JSON.stringify(mockResult),
       });
 
       const result = await flashSaleService.purchaseFlashSaleItem('item-1', 'token-123');

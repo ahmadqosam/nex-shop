@@ -46,7 +46,7 @@ export const Footer: React.FC = () => {
           <div className="md:col-span-4 bg-[#F8F8F8] rounded-[40px] overflow-hidden relative group h-[600px]">
              <Image 
                src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&q=80&w=800" 
-               alt="Footer model" 
+               alt="Nex Ace Premium Wireless Headphone" 
                fill
                className="object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 group-hover:scale-105"
              />

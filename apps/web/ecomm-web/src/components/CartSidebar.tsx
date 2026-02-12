@@ -47,7 +47,7 @@ export const CartSidebar: React.FC = () => {
             cart.map((item) => (
               <div key={item.id} className="flex space-x-4 border-b pb-6 last:border-0 border-secondary/10">
                 <div className="relative w-24 h-24 bg-secondary/5 rounded overflow-hidden">
-                  <Image src={item.image} alt={item.name} fill className="object-cover" />
+                  <Image src={item.image} alt={item.name || item.productName} fill className="object-cover" />
                 </div>
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
