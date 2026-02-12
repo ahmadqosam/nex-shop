@@ -19,11 +19,19 @@ class AuthServiceError extends Error {
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    const error: AuthError = await response.json().catch(() => ({
-      statusCode: response.status,
-      message: response.statusText,
-    }));
-    throw new AuthServiceError(error.message || response.statusText, response.status);
+    const errorData = await response.json().catch(() => ({}));
+    let message = errorData.message || response.statusText;
+    
+    if (Array.isArray(message)) {
+      message = message.join(', ');
+    } else if (typeof message === 'object' && message !== null) {
+      message = (message as any).message || JSON.stringify(message);
+      if (Array.isArray(message)) {
+        message = message.join(', ');
+      }
+    }
+    
+    throw new AuthServiceError(message as string, response.status);
   }
   return response.json();
 }

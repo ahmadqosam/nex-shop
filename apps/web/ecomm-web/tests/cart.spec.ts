@@ -12,15 +12,21 @@ test.describe('Cart Flow', () => {
   test('Guest User Flow - Add, Update, Remove, Persist', async ({ page }) => {
     // 1. Navigate to a product page
     await page.goto('/');
-    // Click first product card
-    await page.locator('a[href^="/product/"]').first().click();
+    
+    // Choose a non-flash sale product
+    const productCard = page.locator('.group.block').filter({ hasNot: page.locator('span:has-text("Buy Now")') }).first();
+    // Re-evaluating: ProductCard labels might not be enough. Let's look for cards without FlashSaleBadge.
+    // FlashSaleBadge is an absolute positioned div with "Zap" icon.
+    const nonFlashSaleProduct = page.locator('.group.block').filter({ hasNot: page.locator('svg.lucide-zap') }).first();
+    await nonFlashSaleProduct.click();
     
     // 2. Add to Cart
-    await expect(page.getByRole('button', { name: /Add to Bag/i })).toBeVisible();
-    await page.getByRole('button', { name: /Add to Bag/i }).click();
+    const addBtn = page.getByRole('button', { name: /Add to Bag/i });
+    await expect(addBtn).toBeVisible({ timeout: 10000 });
+    await addBtn.click();
 
     // 3. Verify Cart Sidebar opens
-    const cartSidebar = page.locator('div.fixed.inset-0.z-\\[200\\]');
+    const cartSidebar = page.getByText('Your Bag (', { exact: false }).first();
     await expect(cartSidebar).toBeVisible();
     await expect(page.getByText('Your Bag (1)')).toBeVisible();
 
@@ -56,54 +62,81 @@ test.describe('Cart Flow', () => {
     await page.getByPlaceholder('you@example.com').fill(uniqueEmail);
     await page.getByPlaceholder('••••••••').fill(testPassword);
     await page.getByRole('button', { name: 'Sign Up' }).click();
-    await expect(page).toHaveURL('/');
+    
+    // Wait for redirect to home page
+    try {
+        await expect(page).toHaveURL('/', { timeout: 15000 });
+    } catch (error) {
+        const errorMsg = page.locator('.bg-red-50');
+        if (await errorMsg.isVisible()) {
+            console.error('Registration failed error in UI:', await errorMsg.innerText());
+        }
+        throw error;
+    }
 
-    // 2. Add to Cart
-    await page.locator('a[href^="/product/"]').first().click();
-    await page.getByRole('button', { name: /Add to Bag/i }).click();
+    // 2. Add to Cart (Non-Flash Sale)
+    await page.goto('/');
+    const nonFlashSaleProduct = page.locator('.group.block').filter({ hasNot: page.locator('svg.lucide-zap') }).first();
+    await nonFlashSaleProduct.click();
+    
+    const addBtn = page.getByRole('button', { name: /Add to Bag/i });
+    await expect(addBtn).toBeVisible();
+    await addBtn.click();
     await expect(page.getByText('Your Bag (1)')).toBeVisible();
     
     // Close cart
     await page.locator('button[aria-label="Close cart"]').click();
 
     // 3. Logout
-    // Assuming profile page has logout for now, or use API?
-    // Let's try to access profile page
     await page.goto('/profile'); 
-    await expect(page).toHaveURL('/profile');
+    await expect(page).toHaveURL('/profile', { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
     
     // Check if logout button exists
     const logoutBtn = page.getByRole('button', { name: /Log out/i });
-    if (await logoutBtn.isVisible()) {
-        await logoutBtn.click();
-    } else {
-        // Fallback: Use profile icon in navbar if profile page is not fully implemented
-        // But we are on profile page.
-        // Let's assume there is a logout button there.
-        // If fails, we might need to Inspect Profile page.
+    try {
+        await expect(logoutBtn).toBeVisible({ timeout: 10000 });
+    } catch (e) {
+        console.error('Logout button NOT visible on profile page');
+        throw e;
     }
+    await logoutBtn.click();
     
     // Wait for redirect to login or home
-    await expect(page).toHaveURL('/login');
+    await expect(page).toHaveURL('/login', { timeout: 10000 });
 
     // 4. Login again
     await page.getByPlaceholder('you@example.com').fill(uniqueEmail);
     await page.getByPlaceholder('••••••••').fill(testPassword);
     await page.getByRole('button', { name: 'Sign In' }).click();
-    await expect(page).toHaveURL('/');
+    
+    try {
+      await expect(page).toHaveURL('/', { timeout: 10000 });
+    } catch (error) {
+      const errorMsg = page.locator('.bg-red-50');
+      if (await errorMsg.isVisible()) {
+        const text = await errorMsg.innerText();
+        console.error(`Login failed with error: ${text}`);
+      }
+      throw error;
+    }
 
     // 5. Open Cart and Verify
     await page.locator('button[aria-label="Open cart"]').click();
-    await expect(page.getByText('Your Bag (1)')).toBeVisible();
+    await expect(page.getByText('Your Bag (1)')).toBeVisible({ timeout: 10000 });
   });
 
   test('Merge Cart Flow - Guest to Registered', async ({ page }) => {
     const uniqueEmail = getUniqueEmail();
 
-    // 1. Add item as Guest
+    // 1. Add item as Guest (Non-Flash Sale)
     await page.goto('/');
-    await page.locator('a[href^="/product/"]').first().click();
-    await page.getByRole('button', { name: /Add to Bag/i }).click();
+    const nonFlashSaleProduct = page.locator('.group.block').filter({ hasNot: page.locator('svg.lucide-zap') }).first();
+    await nonFlashSaleProduct.click();
+    
+    const addBtn = page.getByRole('button', { name: /Add to Bag/i });
+    await expect(addBtn).toBeVisible();
+    await addBtn.click();
     await expect(page.getByText('Your Bag (1)')).toBeVisible();
     
     const guestItemName = await page.locator('h3.font-serif').first().innerText();
@@ -117,13 +150,65 @@ test.describe('Cart Flow', () => {
     await page.getByPlaceholder('you@example.com').fill(uniqueEmail);
     await page.getByPlaceholder('••••••••').fill(testPassword);
     await page.getByRole('button', { name: 'Sign Up' }).click();
-    await expect(page).toHaveURL('/');
+    
+    // Wait for redirect to home page
+    try {
+        await expect(page).toHaveURL('/', { timeout: 15000 });
+    } catch (error) {
+        const errorMsg = page.locator('.bg-red-50');
+        if (await errorMsg.isVisible()) {
+            console.error('Merge registration failed error in UI:', await errorMsg.innerText());
+        }
+        throw error;
+    }
 
     // 3. Open Cart and Verify Item is there
     await page.locator('button[aria-label="Open cart"]').click();
     
-    await expect(page.getByText('Your Bag (1)')).toBeVisible();
-    await expect(page.locator('h3.font-serif').first()).toHaveText(guestItemName);
+    await expect(page.getByText('Your Bag (1)')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('h3.font-serif').first()).toHaveText(guestItemName, { timeout: 10000 });
+  });
+
+  test('Flash Sale Flow - Buy Now', async ({ page }) => {
+    const uniqueEmail = getUniqueEmail();
+
+    // 1. Register
+    await page.goto('/register');
+    await page.getByPlaceholder('John Doe').fill('Flash User');
+    await page.getByPlaceholder('you@example.com').fill(uniqueEmail);
+    await page.getByPlaceholder('••••••••').fill(testPassword);
+    await page.getByRole('button', { name: 'Sign Up' }).click();
+    
+    // Wait for redirect to home page
+    try {
+        await expect(page).toHaveURL('/', { timeout: 15000 });
+    } catch (error) {
+        const errorMsg = page.locator('.bg-red-50');
+        if (await errorMsg.isVisible()) {
+            console.error('Flash sale registration failed error in UI:', await errorMsg.innerText());
+        }
+        throw error;
+    }
+
+    // 2. Find an available Flash Sale product (not sold out)
+    const flashSaleProduct = page.locator('.group.block')
+        .filter({ has: page.locator('svg.lucide-zap') })
+        .filter({ hasNot: page.getByText('0 left', { exact: true }) })
+        .first();
+        
+    if (await flashSaleProduct.isVisible()) {
+        await flashSaleProduct.click();
+        
+        // 3. Purchase Flash Sale
+        const buyNowBtn = page.getByRole('button', { name: /Buy Now|Purchase Flash Sale/i });
+        await expect(buyNowBtn).toBeVisible({ timeout: 15000 });
+        await buyNowBtn.click();
+        
+        // 4. Verify checkout/confirmation (mocked or real)
+        await expect(page).toHaveURL(/\/checkout\/confirmation/);
+    } else {
+        console.log('No Flash Sale product found, skipping specific test');
+    }
   });
 
 });

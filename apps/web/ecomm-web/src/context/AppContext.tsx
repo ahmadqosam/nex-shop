@@ -42,31 +42,49 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     expiresAt: null,
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize session and load user/cart
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Load user
-      const savedUser = localStorage.getItem(USER_STORAGE_KEY);
-      if (savedUser) setUser(JSON.parse(savedUser));
+    const initialize = async () => {
+      if (typeof window !== 'undefined') {
+        const savedUser = localStorage.getItem(USER_STORAGE_KEY);
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+          
+          // Try to refresh token if we have a user
+          try {
+            const response = await authService.refreshToken();
+            setAuthState({
+              accessToken: response.accessToken,
+              expiresAt: Date.now() + response.expiresIn * 1000,
+            });
+          } catch (error) {
+            console.log('Initial token refresh failed:', error);
+          }
+        }
 
-      // Load or create session ID
-      let currentSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
-      if (!currentSessionId) {
-        currentSessionId = crypto.randomUUID();
-        localStorage.setItem(SESSION_STORAGE_KEY, currentSessionId);
+        // Load or create session ID
+        let currentSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
+        if (!currentSessionId) {
+          currentSessionId = crypto.randomUUID();
+          localStorage.setItem(SESSION_STORAGE_KEY, currentSessionId);
+        }
+        setSessionId(currentSessionId);
       }
-      setSessionId(currentSessionId);
-    }
+      setIsAuthLoading(false);
+    };
+
+    initialize();
   }, []);
 
   // Fetch cart when session or user is ready
   useEffect(() => {
     const fetchCart = async () => {
-      if (!sessionId) return;
+      // Don't fetch while authenticating to prevent race conditions with mergeCart
+      if (!sessionId || isAuthLoading) return;
       
       try {
         const cart = await cartService.getCart(
@@ -82,7 +100,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     fetchCart();
-  }, [sessionId, user?.id, authState.accessToken]);
+  }, [sessionId, user?.id, authState.accessToken, isAuthLoading]);
 
   // Persist user
   useEffect(() => {
@@ -228,7 +246,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         accessToken: token,
         expiresAt: Date.now() + response.expiresIn * 1000,
       });
-      setUser({ id: userId, email, name: email.split('@')[0] });
+      setUser({ 
+        id: userId, 
+        email, 
+        name: email.split('@')[0],
+        createdAt: new Date().toISOString() // Fallback until profile is fetched
+      });
 
       // Merge cart
       if (sessionId && cartItems.length > 0) {
@@ -264,7 +287,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         accessToken: token,
         expiresAt: Date.now() + response.expiresIn * 1000,
       });
-      setUser({ id: userId, email, name: name || email.split('@')[0] });
+      setUser({ 
+        id: userId, 
+        email, 
+        name: name || email.split('@')[0],
+        createdAt: new Date().toISOString()
+      });
       
       // Merge cart also for register? Usually just create new or claim guest cart.
       if (sessionId && cartItems.length > 0) {

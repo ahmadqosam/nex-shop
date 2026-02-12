@@ -31,6 +31,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  createdAt: string;
 }
 
 export interface ProductVariant {
@@ -63,6 +64,18 @@ export interface VariantResponseDto {
   name: string;
   priceInCents: number | null;
   attributes: VariantAttributesDto;
+}
+
+export interface AddItemDto {
+  productId: string;
+  variantId: string;
+  sku: string;
+  quantity: number;
+  priceInCents: number;
+  currency?: string;
+  productName: string;
+  variantName: string;
+  imageUrl?: string;
 }
 
 export interface ProductSpecificationsDto {

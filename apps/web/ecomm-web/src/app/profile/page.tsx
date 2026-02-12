@@ -37,7 +37,9 @@ export default function ProfilePage() {
         </div>
         <div className="mb-6">
           <p className="text-sm text-gray-500 uppercase tracking-wide mb-1">Member Since</p>
-          <p className="font-medium text-lg">{new Date(user.createdAt).toLocaleDateString()}</p>
+          <p className="font-medium text-lg">
+            {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'New Member'}
+          </p>
         </div>
 
         <button

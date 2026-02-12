@@ -52,7 +52,7 @@ export const CartSidebar: React.FC = () => {
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <div className="flex justify-between">
-                      <h3 className="font-bold font-serif text-primary">{item.name}</h3>
+                      <h3 className="font-bold font-serif text-primary">{item.productName}</h3>
                       <p className="font-bold text-primary">${item.price}</p>
                     </div>
                     <p className="text-sm text-secondary">{item.category}</p>

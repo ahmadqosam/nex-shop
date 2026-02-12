@@ -238,12 +238,12 @@ export default async function HomePage() {
                 <h4 className="text-5xl md:text-6xl font-bold tracking-tighter mb-6 leading-none">
                   {flashSaleProduct.flashSale!.saleName}
                 </h4>
-                <p className="text-xl text-white/70 mb-10 max-w-sm">
+                <div className="text-xl text-white/70 mb-10 max-w-sm">
                   Exclusive member-only prices. <br />
                   Ends in <span className="text-white font-bold inline-block min-w-[100px] text-left ml-1">
                     <CountdownTimer endTime={flashSaleProduct.flashSale!.saleEndTime} mode="compact" />
                   </span>
-                </p>
+                </div>
                 
                 <Link 
                   href={`/product/${flashSaleProduct.id}`} 

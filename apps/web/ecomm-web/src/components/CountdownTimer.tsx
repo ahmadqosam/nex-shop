@@ -62,9 +62,9 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
 
   if (mode === 'compact') {
     return (
-      <div className={`text-xs font-medium text-red-600 ${className}`}>
+      <span className={`text-xs font-medium text-red-600 ${className}`}>
         Ends in: {formatNumber(timeLeft.hours)}:{formatNumber(timeLeft.minutes)}:{formatNumber(timeLeft.seconds)}
-      </div>
+      </span>
     );
   }
 
