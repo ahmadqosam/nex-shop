@@ -1,27 +1,146 @@
 # Product API
 
-Product catalog microservice for the nex-shop e-commerce platform.
+Product catalog microservice for the Nex-Shop e-commerce platform.
 
 ## Features
 
-- **PostgreSQL** database with Prisma ORM
-- **Redis** caching with 5-minute TTL
-- **Swagger/OpenAPI** documentation
-- **100% unit test coverage**
-- **E2E tests** with testcontainers
-- **Lambda deployment** via Serverless Framework
+- **Dynamic Catalog**: Manage products, categories, and tags with full CRUD support.
+- **Variant Support**: Detailed product variants with SKU-specific pricing and attributes.
+- **Flash Sales**: Integrated flash sale management with high-concurrency support.
+- **Optimized Performance**: Multi-level caching with Redis (5-minute TTL).
+- **Relational Storage**: Robust data modeling using PostgreSQL and Prisma ORM.
+- **Serverless Ready**: Fully compatible with AWS Lambda and LocalStack deployment.
 
 ## Tech Stack
 
-| Technology | Purpose           |
-| ---------- | ----------------- |
-| NestJS     | Backend framework |
-| PostgreSQL | Database          |
-| Prisma     | ORM               |
-| Redis      | Caching           |
-| Swagger    | API documentation |
-| Jest       | Testing           |
-| Serverless | Lambda deployment |
+- **Framework**: NestJS v11
+- **Language**: TypeScript 5.7
+- **Database**: PostgreSQL (Prisma ORM)
+- **Cache**: Redis (ioredis)
+- **Testing**: Jest, Testcontainers
+- **API Docs**: Swagger / OpenAPI
+- **Deployment**: Serverless Framework, AWS Lambda
+
+## Architecture
+
+### Module Structure
+
+```
+src/
+├── products/       # Core domain: controllers, services, DTOs
+├── prisma/         # Prisma client and database service
+├── cache/          # Redis caching implementation
+├── config/         # Environment configuration and Joi validation
+├── common/         # Shared filters and decorators
+└── lambda.ts       # AWS Lambda entry point
+```
+
+### Database Schema
+
+The service uses PostgreSQL via Prisma with the following primary models:
+
+#### `products`
+
+| Field          | Type      | Description              |
+| -------------- | --------- | ------------------------ |
+| `id`           | `uuid`    | Primary key              |
+| `name`         | `varchar` | Product name             |
+| `slug`         | `unique`  | URL-friendly identifier  |
+| `category`     | `varchar` | Product category         |
+| `base_price`   | `int`     | Price in cents           |
+| `is_available` | `boolean` | Global availability flag |
+
+#### `variants`
+
+| Field        | Type      | Description                            |
+| ------------ | --------- | -------------------------------------- |
+| `id`         | `uuid`    | Primary key                            |
+| `sku`        | `unique`  | Stock keeping unit (used by inventory) |
+| `name`       | `varchar` | Variant name (e.g., "Midnight Black")  |
+| `attributes` | `json`    | Flexible key-value attributes          |
+
+#### `flash_sales`
+
+| Field       | Type      | Description          |
+| ----------- | --------- | -------------------- |
+| `id`        | `uuid`    | Primary key          |
+| `startTime` | `tz`      | Sale start timestamp |
+| `endTime`   | `tz`      | Sale end timestamp   |
+| `isActive`  | `boolean` | Sale status          |
+
+## Setup
+
+### Prerequisites
+
+- Node.js 20+
+- pnpm
+- Docker (for local infrastructure)
+
+### Installation
+
+```bash
+pnpm install
+```
+
+### Infrastructure Setup
+
+```bash
+# Start PostgreSQL, Redis, and LocalStack
+docker compose up -d
+
+# Generate Prisma client
+pnpm prisma:generate
+
+# Push schema to database
+pnpm prisma:push
+
+# Seed product and variant data
+pnpm prisma:seed
+```
+
+### Running Locally
+
+```bash
+# Start development server
+pnpm dev
+```
+
+The API will be available at [http://localhost:4002](http://localhost:4002).
+
+## Testing
+
+### Running Tests
+
+```bash
+# Unit tests
+pnpm test
+
+# E2E tests
+pnpm test:e2e
+
+# Coverage report
+pnpm test:cov
+```
+
+### Coverage Thresholds
+
+- **Statements/Functions/Lines**: 100%
+- **Branches**: 75%
+
+## Deployment
+
+### Serverless (AWS Lambda)
+
+```bash
+# Build for Lambda
+pnpm build:lambda
+
+# Deploy to LocalStack
+pnpm deploy:local
+
+# Deploy to AWS
+serverless deploy --stage production
+```
 
 ## API Endpoints
 
@@ -43,105 +162,6 @@ Product catalog microservice for the nex-shop e-commerce platform.
 | `sortBy`    | string | createdAt | Sort field: name, price, createdAt |
 | `sortOrder` | string | desc      | Sort order: asc, desc              |
 
-## Getting Started
+## 📝 License
 
-### Prerequisites
-
-- Node.js 20+
-- pnpm
-- Docker
-
-### Installation
-
-```bash
-pnpm install
-```
-
-### Start Services
-
-```bash
-# Start PostgreSQL, Redis, Localstack
-docker compose up -d
-
-# Generate Prisma client
-npx prisma generate
-
-# Push schema to database
-npx prisma db push
-
-# Seed database
-npx prisma db seed
-```
-
-### Run Development Server
-
-```bash
-pnpm start:dev
-```
-
-API available at: http://localhost:4002  
-Swagger docs at: http://localhost:4002/api/docs
-
-## Testing
-
-```bash
-# Unit tests
-pnpm test
-
-# Unit tests with coverage
-pnpm test:cov
-
-# E2E tests
-pnpm test:e2e
-```
-
-## Environment Variables
-
-| Variable         | Default     | Description                  |
-| ---------------- | ----------- | ---------------------------- |
-| `DATABASE_URL`   | -           | PostgreSQL connection string |
-| `REDIS_HOST`     | localhost   | Redis host                   |
-| `REDIS_PORT`     | 6381        | Redis port                   |
-| `REDIS_PASSWORD` | -           | Redis password               |
-| `CACHE_TTL`      | 300         | Cache TTL in seconds         |
-| `NODE_ENV`       | development | Environment                  |
-
-## Deployment
-
-### Deploy to Localstack
-
-```bash
-pnpm deploy:local
-```
-
-### Build for Production
-
-```bash
-pnpm build:lambda
-```
-
-## Project Structure
-
-```
-├── prisma/
-│   ├── schema.prisma      # Database schema
-│   └── seed.ts            # Seed script
-├── src/
-│   ├── cache/             # Redis caching module
-│   ├── common/            # Exception filters
-│   ├── config/            # Config validation
-│   ├── prisma/            # Prisma service
-│   ├── products/          # Products module
-│   ├── app.module.ts      # Root module
-│   ├── main.ts            # App entry point
-│   └── lambda.ts          # Lambda handler
-├── test/
-│   ├── app.e2e-spec.ts    # E2E tests
-│   └── products.e2e-spec.ts # E2E with testcontainers
-├── docker-compose.yml
-└── serverless.yml
-```
-
-## License
-
-MIT
+UNLICENSED - Private project

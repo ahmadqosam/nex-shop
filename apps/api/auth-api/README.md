@@ -2,7 +2,7 @@
 
 A production-ready authentication microservice built with NestJS, featuring JWT-based authentication with refresh tokens, role-based access control, and enterprise-grade security.
 
-## 🚀 Features
+## Features
 
 - **JWT Authentication** with RS256 signing and JWKS public key discovery
 - **Opaque Refresh Tokens** with Argon2 hashing stored in Redis
@@ -12,7 +12,7 @@ A production-ready authentication microservice built with NestJS, featuring JWT-
 - **100% Test Coverage** (statements, functions, lines) with 75% branch coverage
 - **Production-Grade Security** with separate Argon2 parameters for passwords and tokens
 
-## 📋 Tech Stack
+## Tech Stack
 
 - **Framework**: NestJS v11
 - **Language**: TypeScript 5.7
@@ -24,7 +24,7 @@ A production-ready authentication microservice built with NestJS, featuring JWT-
 - **Linting**: ESLint 9
 - **Deployment**: Serverless Framework, AWS Lambda
 
-## 🏗️ Architecture
+## Architecture
 
 ### Authentication Flow
 
@@ -64,7 +64,7 @@ The service uses PostgreSQL to store user information. The primary `users` table
 | `createdAt`    | `timestamptz`  | Record creation timestamp              |
 | `updatedAt`    | `timestamptz`  | Record last update timestamp           |
 
-## 🛠️ Setup
+## Setup
 
 ### Prerequisites
 
@@ -158,7 +158,7 @@ docker-compose up -d
 
 Wait a few seconds for services to initialize, then try again.
 
-## 🧪 Testing
+## Testing
 
 ### Running Tests
 
@@ -218,7 +218,7 @@ export DOCKER_HOST=unix:///var/run/docker.sock
 - **Opaque tokens**: Format `{userId}.{tokenId}.{base64urlRandom}` prevents token enumeration
 - **RS256 signing**: Asymmetric keys allow public verification without exposing signing key
 
-## 🚢 Deployment
+## Deployment
 
 ### Serverless (AWS Lambda)
 
@@ -332,7 +332,7 @@ pnpm test
 pnpm test:e2e
 ```
 
-## 📖 API Documentation
+## API Documentation
 
 When running in development mode, Swagger documentation is available at:
 

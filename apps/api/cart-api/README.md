@@ -1,23 +1,146 @@
 # Cart API
 
-Shopping cart management microservice for nex-shop e-commerce platform.
-
-## Overview
-
-- **Port:** 4004
-- **Framework:** NestJS
-- **Database:** PostgreSQL (via Prisma)
-- **Cache:** Redis
+Shopping cart management microservice for the Nex-Shop e-commerce platform.
 
 ## Features
 
-- Guest and authenticated user carts
-- Cart item management (add, update, remove)
-- Guest-to-user cart merge on login
-- Redis caching with cache-aside pattern
-- Price snapshots at time of adding
-- Inventory checks against `inventory-api`
-- Cart conversion to order (status update)
+- **Guest and Authenticated Carts**: Support for both session-based and user-based shopping carts.
+- **Cart Merging**: Automatic merging of guest carts into user accounts upon login.
+- **Price Snapshots**: Captures product prices at the time of adding to ensure price consistency.
+- **Inventory Integration**: Real-time stock verification against the `inventory-api`.
+- **Redis Caching**: High-performance cart retrieval using the cache-aside pattern.
+- **Event-Driven Cleanup**: Processes payment events to convert or clear carts.
+- **Serverless Ready**: Fully compatible with AWS Lambda and LocalStack.
+
+## Tech Stack
+
+- **Framework**: NestJS v11
+- **Language**: TypeScript 5.7
+- **Database**: PostgreSQL (Prisma ORM)
+- **Cache**: Redis (ioredis)
+- **HTTP Client**: Axios (@nestjs/axios) for communication with Inventory API
+- **Testing**: Jest, Testcontainers
+- **API Docs**: Swagger / OpenAPI
+- **Deployment**: Serverless Framework, AWS Lambda
+
+## Architecture
+
+### Module Structure
+
+```
+src/
+├── cart/           # Core domain: controllers, services, DTOs
+├── prisma/         # Prisma client and database service
+├── cache/          # Redis caching implementation
+├── config/         # Environment configuration and Joi validation
+├── common/         # Shared filters and utilities
+└── lambda-sqs.ts   # SQS event handler for payment/order events
+```
+
+### Database Schema
+
+The service uses PostgreSQL via Prisma with the following primary models:
+
+#### `carts`
+
+| Field                   | Type      | Description                                  |
+| ----------------------- | --------- | -------------------------------------------- |
+| `id`                    | `uuid`    | Primary key                                  |
+| `user_id`               | `varchar` | Associated user ID (for authenticated users) |
+| `session_id`            | `varchar` | Associated session ID (for guest users)      |
+| `status`                | `enum`    | `ACTIVE`, `MERGED`, `CONVERTED`, `ABANDONED` |
+| `expires_at`            | `tz`      | TTL for guest cart cleanup                   |
+| `createdAt`/`updatedAt` | `tz`      | Standard timestamps                          |
+
+#### `cart_items`
+
+| Field            | Type      | Description                        |
+| ---------------- | --------- | ---------------------------------- |
+| `id`             | `uuid`    | Primary key                        |
+| `cart_id`        | `uuid`    | Foreign key to carts               |
+| `variant_id`     | `varchar` | Unique product variant ID          |
+| `sku`            | `varchar` | Stock keeping unit                 |
+| `quantity`       | `int`     | Item quantity                      |
+| `price_in_cents` | `int`     | Snapshot of price at time of entry |
+| `product_name`   | `varchar` | Snapshot of product name           |
+
+### Inter-Service Communication
+
+| Service           | Role             | Description                                         |
+| ----------------- | ---------------- | --------------------------------------------------- |
+| **inventory-api** | Stock Validation | Validates stock availability before adding to cart. |
+| **auth-api**      | User Context     | Provides user identity for cart merging.            |
+
+## Setup
+
+### Prerequisites
+
+- Node.js 20+
+- pnpm
+- Docker (for local infrastructure)
+
+### Installation
+
+```bash
+pnpm install
+```
+
+### Infrastructure Setup
+
+```bash
+# Start PostgreSQL, Redis, and LocalStack
+docker compose up -d
+
+# Generate Prisma client
+pnpm prisma:generate
+
+# Push schema to database
+pnpm prisma:push
+```
+
+### Running Locally
+
+```bash
+# Start development server
+pnpm dev
+```
+
+The API will be available at [http://localhost:4004](http://localhost:4004).
+
+## Testing
+
+### Running Tests
+
+```bash
+# Unit tests
+pnpm test
+
+# E2E tests
+pnpm test:e2e
+
+# Coverage report
+pnpm test:cov
+```
+
+### Coverage Thresholds
+
+- **Statements/Functions/Lines**: 100%
+- **Branches**: 75%
+
+## Deployment
+
+### Serverless (AWS Lambda)
+
+```bash
+# Build for Lambda
+pnpm build:lambda
+
+# Deploy to LocalStack
+pnpm deploy:local
+
+# Deploy to AWS
+serverless deploy --stage production
+```
 
 ## API Endpoints
 
@@ -33,98 +156,6 @@ Shopping cart management microservice for nex-shop e-commerce platform.
 | POST   | `/cart/merge`                 | Merge guest cart into user cart                                 |
 | POST   | `/cart/:cartId/convert`       | Convert cart to order (status: CONVERTED)                       |
 
-## Data Models
+## 📝 License
 
-### Cart
-
-```prisma
-model Cart {
-  id        String     @id @default(uuid())
-  userId    String?    // Authenticated user
-  sessionId String?    // Guest session
-  status    CartStatus // ACTIVE, MERGED, CONVERTED, ABANDONED, EXPIRED
-  items     CartItem[]
-  expiresAt DateTime?  // TTL for guest carts (7 days)
-}
-```
-
-### CartItem
-
-```prisma
-model CartItem {
-  id           String @id @default(uuid())
-  cartId       String
-  productId    String // From product-api
-  variantId    String
-  sku          String
-  quantity     Int
-  priceInCents Int    // Price snapshot
-  productName  String // Display snapshot
-  variantName  String
-  imageUrl     String?
-}
-```
-
-## Caching Strategy
-
-Uses **cache-aside pattern** with Redis:
-
-- **Read:** Check cache first → DB fallback → cache result
-- **Write:** Invalidate cache → update DB → re-cache
-
-### Cache Keys
-
-| Key                        | TTL   | Purpose               |
-| -------------------------- | ----- | --------------------- |
-| `cart:{id}`                | 5 min | Full cart with items  |
-| `user_cart:{userId}`       | 5 min | User → cart lookup    |
-| `session_cart:{sessionId}` | 5 min | Session → cart lookup |
-
-## Cart Lifecycle
-
-```
-ACTIVE → MERGED     (guest cart merged on login)
-ACTIVE → CONVERTED  (checkout complete)
-ACTIVE → ABANDONED  (analytics tracking)
-ACTIVE → EXPIRED    (guest cart TTL reached)
-```
-
-## Development
-
-```bash
-# Install dependencies
-pnpm install
-
-# Generate Prisma client
-pnpm prisma:generate
-
-# Push schema to database
-pnpm prisma:push
-
-# Run development server
-pnpm dev
-
-# Run tests
-pnpm test        # Unit tests
-pnpm test:e2e    # Integration tests
-```
-
-## Environment Variables
-
-```env
-PORT=4004
-NODE_ENV=development
-DATABASE_URL="postgresql://cart_api_user:cart_api_password@localhost:5432/cart_api_db"
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=
-CACHE_TTL=300
-CACHE_TTL=300
-CORS_ORIGIN=http://localhost:3000
-INVENTORY_API_URL=http://localhost:4002
-
-```
-
-## Swagger Documentation
-
-Available at http://localhost:4004/api/docs
+UNLICENSED - Private project

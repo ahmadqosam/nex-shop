@@ -43,43 +43,43 @@ The service uses PostgreSQL via Prisma ORM with two tables:
 
 **`orders`**
 
-| Field                | Type          | Description                                      |
-| -------------------- | ------------- | ------------------------------------------------ |
-| `id`                 | `uuid`        | Primary key, auto-generated                      |
-| `order_number`       | `varchar`     | Unique, format `ORD-YYYYMMDD-XXXX`               |
-| `user_id`            | `varchar`     | User who placed the order (indexed)               |
-| `email`              | `varchar`     | Contact email for the order                       |
-| `status`             | `enum`        | Order status (indexed) — see Status Transitions   |
-| `shipping_address`   | `jsonb`       | Shipping address object                           |
-| `subtotal_in_cents`  | `int`         | Sum of all item totals                            |
-| `shipping_cost_in_cents` | `int`     | Shipping cost (default: 0)                        |
-| `total_in_cents`     | `int`         | Grand total (subtotal + shipping)                 |
-| `currency`           | `varchar`     | Currency code (default: `USD`)                    |
-| `notes`              | `text`        | Optional order notes                              |
-| `paid_at`            | `timestamptz` | Set when status transitions to CONFIRMED          |
-| `shipped_at`         | `timestamptz` | Set when status transitions to SHIPPED            |
-| `delivered_at`       | `timestamptz` | Set when status transitions to DELIVERED          |
-| `cancelled_at`       | `timestamptz` | Set when order is cancelled                       |
-| `cancellation_reason`| `text`        | Reason for cancellation                           |
-| `created_at`         | `timestamptz` | Record creation timestamp                         |
-| `updated_at`         | `timestamptz` | Record last update timestamp                      |
+| Field                    | Type          | Description                                     |
+| ------------------------ | ------------- | ----------------------------------------------- |
+| `id`                     | `uuid`        | Primary key, auto-generated                     |
+| `order_number`           | `varchar`     | Unique, format `ORD-YYYYMMDD-XXXX`              |
+| `user_id`                | `varchar`     | User who placed the order (indexed)             |
+| `email`                  | `varchar`     | Contact email for the order                     |
+| `status`                 | `enum`        | Order status (indexed) — see Status Transitions |
+| `shipping_address`       | `jsonb`       | Shipping address object                         |
+| `subtotal_in_cents`      | `int`         | Sum of all item totals                          |
+| `shipping_cost_in_cents` | `int`         | Shipping cost (default: 0)                      |
+| `total_in_cents`         | `int`         | Grand total (subtotal + shipping)               |
+| `currency`               | `varchar`     | Currency code (default: `USD`)                  |
+| `notes`                  | `text`        | Optional order notes                            |
+| `paid_at`                | `timestamptz` | Set when status transitions to CONFIRMED        |
+| `shipped_at`             | `timestamptz` | Set when status transitions to SHIPPED          |
+| `delivered_at`           | `timestamptz` | Set when status transitions to DELIVERED        |
+| `cancelled_at`           | `timestamptz` | Set when order is cancelled                     |
+| `cancellation_reason`    | `text`        | Reason for cancellation                         |
+| `created_at`             | `timestamptz` | Record creation timestamp                       |
+| `updated_at`             | `timestamptz` | Record last update timestamp                    |
 
 **`order_items`**
 
-| Field                | Type      | Description                            |
-| -------------------- | --------- | -------------------------------------- |
-| `id`                 | `uuid`    | Primary key, auto-generated            |
-| `order_id`           | `uuid`    | Foreign key to orders (cascade delete) |
-| `product_id`         | `varchar` | Reference to product-api product       |
-| `variant_id`         | `varchar` | Reference to product variant           |
-| `sku`                | `varchar` | Stock keeping unit                     |
-| `quantity`           | `int`     | Quantity ordered                        |
-| `unit_price_in_cents`| `int`     | Price per unit                         |
-| `total_price_in_cents`| `int`    | unit_price * quantity                  |
-| `currency`           | `varchar` | Currency code (default: `USD`)         |
-| `product_name`       | `varchar` | Snapshot of product name at order time |
-| `variant_name`       | `varchar` | Snapshot of variant name at order time |
-| `image_url`          | `varchar` | Optional product image URL             |
+| Field                  | Type      | Description                            |
+| ---------------------- | --------- | -------------------------------------- |
+| `id`                   | `uuid`    | Primary key, auto-generated            |
+| `order_id`             | `uuid`    | Foreign key to orders (cascade delete) |
+| `product_id`           | `varchar` | Reference to product-api product       |
+| `variant_id`           | `varchar` | Reference to product variant           |
+| `sku`                  | `varchar` | Stock keeping unit                     |
+| `quantity`             | `int`     | Quantity ordered                       |
+| `unit_price_in_cents`  | `int`     | Price per unit                         |
+| `total_price_in_cents` | `int`     | unit_price \* quantity                 |
+| `currency`             | `varchar` | Currency code (default: `USD`)         |
+| `product_name`         | `varchar` | Snapshot of product name at order time |
+| `variant_name`         | `varchar` | Snapshot of variant name at order time |
+| `image_url`            | `varchar` | Optional product image URL             |
 
 ### Order Status Transitions
 
@@ -91,37 +91,37 @@ PENDING ──────► CONFIRMED ──────► PROCESSING ──�
   └──► CANCELLED ◄─┘
 ```
 
-| From       | Allowed Transitions      |
-| ---------- | ------------------------ |
-| PENDING    | CONFIRMED, CANCELLED     |
-| CONFIRMED  | PROCESSING, CANCELLED    |
-| PROCESSING | SHIPPED                  |
-| SHIPPED    | DELIVERED                |
-| DELIVERED  | REFUNDED                 |
-| CANCELLED  | _(terminal state)_       |
-| REFUNDED   | _(terminal state)_       |
+| From       | Allowed Transitions   |
+| ---------- | --------------------- |
+| PENDING    | CONFIRMED, CANCELLED  |
+| CONFIRMED  | PROCESSING, CANCELLED |
+| PROCESSING | SHIPPED               |
+| SHIPPED    | DELIVERED             |
+| DELIVERED  | REFUNDED              |
+| CANCELLED  | _(terminal state)_    |
+| REFUNDED   | _(terminal state)_    |
 
 ### Inter-Service Communication
 
 The order service communicates with two sibling microservices via HTTP:
 
-| Service       | Base URL (default)      | Endpoints Used                                      |
-| ------------- | ----------------------- | --------------------------------------------------- |
-| **cart-api**      | `http://localhost:4004` | `GET /cart/{id}` — fetch cart, `POST /cart/{id}/convert` — mark cart converted |
+| Service           | Base URL (default)      | Endpoints Used                                                                                   |
+| ----------------- | ----------------------- | ------------------------------------------------------------------------------------------------ |
+| **cart-api**      | `http://localhost:4004` | `GET /cart/{id}` — fetch cart, `POST /cart/{id}/convert` — mark cart converted                   |
 | **inventory-api** | `http://localhost:4003` | `POST /inventory/{sku}/reserve` — reserve stock, `POST /inventory/{sku}/release` — release stock |
 
 All inter-service calls are **best-effort** — failures are logged as warnings but do not block order creation or cancellation.
 
 ## API Endpoints
 
-| Method  | Endpoint                | Description                      |
-| ------- | ----------------------- | -------------------------------- |
-| `POST`  | `/orders`               | Create order from cart or items  |
-| `GET`   | `/orders`               | List orders (paginated/filtered) |
-| `GET`   | `/orders/:id`           | Get order by ID                  |
-| `PATCH` | `/orders/:id/status`    | Update order status              |
-| `PATCH` | `/orders/:id/cancel`    | Cancel an order                  |
-| `GET`   | `/`                     | Health check                     |
+| Method  | Endpoint             | Description                      |
+| ------- | -------------------- | -------------------------------- |
+| `POST`  | `/orders`            | Create order from cart or items  |
+| `GET`   | `/orders`            | List orders (paginated/filtered) |
+| `GET`   | `/orders/:id`        | Get order by ID                  |
+| `PATCH` | `/orders/:id/status` | Update order status              |
+| `PATCH` | `/orders/:id/cancel` | Cancel an order                  |
+| `GET`   | `/`                  | Health check                     |
 
 ### Create Order — `POST /orders`
 
@@ -169,14 +169,14 @@ Or with direct items (when not using a cart):
 
 Query parameters:
 
-| Param       | Type     | Default      | Description                          |
-| ----------- | -------- | ------------ | ------------------------------------ |
-| `page`      | number   | `1`          | Page number (min: 1)                 |
-| `limit`     | number   | `10`         | Items per page (1–100)               |
-| `userId`    | string   | —            | Filter by user ID                    |
-| `status`    | enum     | —            | Filter by order status               |
-| `sortBy`    | string   | `createdAt`  | Sort field: `createdAt`, `totalInCents` |
-| `sortOrder` | string   | `desc`       | Sort direction: `asc`, `desc`        |
+| Param       | Type   | Default     | Description                             |
+| ----------- | ------ | ----------- | --------------------------------------- |
+| `page`      | number | `1`         | Page number (min: 1)                    |
+| `limit`     | number | `10`        | Items per page (1–100)                  |
+| `userId`    | string | —           | Filter by user ID                       |
+| `status`    | enum   | —           | Filter by order status                  |
+| `sortBy`    | string | `createdAt` | Sort field: `createdAt`, `totalInCents` |
+| `sortOrder` | string | `desc`      | Sort direction: `asc`, `desc`           |
 
 ### Update Status — `PATCH /orders/:id/status`
 
@@ -225,18 +225,18 @@ pnpm prisma:seed
 
 ### Environment Variables
 
-| Variable            | Required | Default                  | Description                    |
-| ------------------- | -------- | ------------------------ | ------------------------------ |
-| `PORT`              | No       | `4005`                   | Server port                    |
-| `NODE_ENV`          | No       | `development`            | Environment                    |
-| `DATABASE_URL`      | **Yes**  | —                        | PostgreSQL connection string   |
-| `REDIS_HOST`        | No       | `localhost`              | Redis host                     |
-| `REDIS_PORT`        | No       | `6379`                   | Redis port                     |
-| `REDIS_PASSWORD`    | No       | _(empty)_                | Redis password                 |
-| `CACHE_TTL`         | No       | `300`                    | Cache TTL in seconds           |
-| `CORS_ORIGIN`       | No       | `http://localhost:3000`  | Allowed CORS origin            |
-| `CART_API_URL`      | No       | `http://localhost:4004`  | Cart service base URL          |
-| `INVENTORY_API_URL` | No       | `http://localhost:4003`  | Inventory service base URL     |
+| Variable            | Required | Default                 | Description                  |
+| ------------------- | -------- | ----------------------- | ---------------------------- |
+| `PORT`              | No       | `4005`                  | Server port                  |
+| `NODE_ENV`          | No       | `development`           | Environment                  |
+| `DATABASE_URL`      | **Yes**  | —                       | PostgreSQL connection string |
+| `REDIS_HOST`        | No       | `localhost`             | Redis host                   |
+| `REDIS_PORT`        | No       | `6379`                  | Redis port                   |
+| `REDIS_PASSWORD`    | No       | _(empty)_               | Redis password               |
+| `CACHE_TTL`         | No       | `300`                   | Cache TTL in seconds         |
+| `CORS_ORIGIN`       | No       | `http://localhost:3000` | Allowed CORS origin          |
+| `CART_API_URL`      | No       | `http://localhost:4004` | Cart service base URL        |
+| `INVENTORY_API_URL` | No       | `http://localhost:4003` | Inventory service base URL   |
 
 ### Running Locally
 
@@ -321,18 +321,18 @@ serverless deploy --stage production
 
 ## Available Scripts
 
-| Script            | Description                          |
-| ----------------- | ------------------------------------ |
-| `pnpm dev`        | Start in watch mode                  |
-| `pnpm build`      | Build for production                 |
-| `pnpm start:prod` | Run production build                 |
-| `pnpm test`       | Run unit tests                       |
-| `pnpm test:cov`   | Run tests with coverage              |
-| `pnpm test:e2e`   | Run end-to-end tests                 |
-| `pnpm lint`       | Lint and fix source files            |
-| `pnpm prisma:generate` | Generate Prisma client          |
-| `pnpm prisma:push`| Push schema to database              |
-| `pnpm prisma:seed`| Seed the database with sample data   |
+| Script                 | Description                        |
+| ---------------------- | ---------------------------------- |
+| `pnpm dev`             | Start in watch mode                |
+| `pnpm build`           | Build for production               |
+| `pnpm start:prod`      | Run production build               |
+| `pnpm test`            | Run unit tests                     |
+| `pnpm test:cov`        | Run tests with coverage            |
+| `pnpm test:e2e`        | Run end-to-end tests               |
+| `pnpm lint`            | Lint and fix source files          |
+| `pnpm prisma:generate` | Generate Prisma client             |
+| `pnpm prisma:push`     | Push schema to database            |
+| `pnpm prisma:seed`     | Seed the database with sample data |
 
 ## License
 

@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nex-Shop E-Commerce Web
+
+The modern, responsive frontend for the Nex-Shop e-commerce platform, built with Next.js 15.
+
+## Features
+
+- **Product Catalog**: Dynamic product listing with category filtering and search.
+- **Shopping Cart**: Real-time cart management with guest and user session support.
+- **User Authentication**: Secure login and registration integrated with Auth API.
+- **Checkout Flow**: Seamless multi-step checkout with payment integration.
+- **Order History**: View past orders and current order status.
+- **Responsive Design**: Optimized for mobile, tablet, and desktop using Tailwind CSS 4.
+
+## Tech Stack
+
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4
+- **State Management**: React Context API
+- **Icons**: Lucide React
+- **Testing**:
+  - **Unit**: Vitest + React Testing Library
+  - **E2E**: Playwright
+- **Package Manager**: pnpm
+
+## Architecture
+
+```
+src/
+├── app/              # Next.js App Router pages and layouts
+├── components/       # Reusable UI components (cart, checkout, product, etc.)
+├── context/          # Global application state (AppContext)
+├── services/         # API client services (auth, cart, order, product)
+├── types/            # TypeScript interfaces and types
+└── utils/            # Helper functions and constants
+```
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+- pnpm
+- APIs running (see [Monorepo README](../../README.md))
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+#### 1. Start APIs
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Ensure the backend services (Auth, Product, etc.) are running. You can start them in the respective directories or via the root infrastructure setup.
 
-## Learn More
+#### 2. Run the Web Application
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Start against local development APIs
+pnpm dev
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Start against LocalStack deployed APIs
+pnpm dev:localstack
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
-## Deploy on Vercel
+## Testing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Running Tests
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Run unit tests (Vitest)
+pnpm test
+
+# Run unit tests in watch mode
+pnpm test:watch
+
+# Run coverage report
+pnpm test:coverage
+
+# Run E2E tests (Playwright)
+pnpm test:e2e
+```
+
+## Deployment
+
+The web application is set up for deployment via Vercel or as a static build.
+
+```bash
+# Build for production
+pnpm build
+
+# Start production server
+pnpm start
+```
+
+## 📝 License
+
+UNLICENSED - Private project

@@ -28,7 +28,7 @@ Log / Process
 - **StripeModule** — Wraps the official Stripe SDK, configurable to point at localstripe
 - **PaymentsModule** — Payment endpoint (JWT protected) and webhook handler (public, signature-verified)
 
-## Prerequisites
+## Getting Started
 
 - Node.js >= 20
 - pnpm >= 9
