@@ -4,7 +4,7 @@ Nex-Shop is a modern, microservices-based e-commerce platform designed for perfo
 
 ## 📺 User Journey Preview
 
-<video src="./assets/user-journey.webm" width="100%" autoplay loop muted></video>
+![User Journey](./assets/user-journey.gif)
 
 ## 🏗️ Architecture
 
