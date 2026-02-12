@@ -44,7 +44,7 @@ test.describe('Cart Flow', () => {
     await page.reload();
     // Open cart
     await page.locator('button[aria-label="Open cart"]').click();
-    
+    await page.waitForTimeout(500); // wait for sidebar cart animation
     await expect(page.getByText('Your Bag (1)')).toBeVisible();
     await expect(quantityDisplay).toHaveText('2');
 
@@ -82,6 +82,7 @@ test.describe('Cart Flow', () => {
     const addBtn = page.getByRole('button', { name: /Add to Bag/i });
     await expect(addBtn).toBeVisible();
     await addBtn.click();
+    await page.waitForTimeout(500); // wait for sidebar cart animation
     await expect(page.getByText('Your Bag (1)')).toBeVisible();
     
     // Close cart
@@ -123,6 +124,7 @@ test.describe('Cart Flow', () => {
 
     // 5. Open Cart and Verify
     await page.locator('button[aria-label="Open cart"]').click();
+    await page.waitForTimeout(500); // wait for sidebar cart animation
     await expect(page.getByText('Your Bag (1)')).toBeVisible({ timeout: 10000 });
   });
 
@@ -164,7 +166,7 @@ test.describe('Cart Flow', () => {
 
     // 3. Open Cart and Verify Item is there
     await page.locator('button[aria-label="Open cart"]').click();
-    
+    await page.waitForTimeout(1000); // wait for sidebar cart animation
     await expect(page.getByText('Your Bag (1)')).toBeVisible({ timeout: 10000 });
     await expect(page.locator('h3.font-serif').first()).toHaveText(guestItemName, { timeout: 10000 });
   });
